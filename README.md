@@ -15,6 +15,22 @@ npm install @requesty/ai-sdk
 yarn add @requesty/ai-sdk
 ```
 
+## API Key Setup
+
+For security, you should set your API key as an environment variable named exactly `REQUESTY_API_KEY`:
+
+```bash
+# Linux/Mac
+export REQUESTY_API_KEY=your_api_key_here
+
+# Windows Command Prompt
+set REQUESTY_API_KEY=your_api_key_here
+
+# Windows PowerShell
+$env:REQUESTY_API_KEY="your_api_key_here"
+```
+
+
 ## Provider Instance
 
 You can import the default provider instance `requesty` from `@requesty/ai-sdk`:
@@ -51,7 +67,7 @@ There are 3 ways to pass extra body to Requesty:
    import { createRequesty } from '@requesty/ai-sdk';
    import { streamText } from 'ai';
 
-   const requesty = createRequesty({ apiKey: 'your-api-key' });
+   const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
    const model = requesty('anthropic/claude-3.7-sonnet');
    await streamText({
      model,
@@ -70,7 +86,7 @@ There are 3 ways to pass extra body to Requesty:
    import { createRequesty } from '@requesty/ai-sdk';
    import { streamText } from 'ai';
 
-   const requesty = createRequesty({ apiKey: 'your-api-key' });
+   const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
    const model = requesty('anthropic/claude-3.7-sonnet', {
      extraBody: {
        custom_field: 'value',
@@ -89,7 +105,7 @@ There are 3 ways to pass extra body to Requesty:
    import { streamText } from 'ai';
 
    const requesty = createRequesty({
-     apiKey: 'your-api-key',
+     apiKey: process.env.REQUESTY_API_KEY,
      extraBody: {
        custom_field: 'value',
      },
@@ -119,7 +135,7 @@ You can configure Requesty to use a custom API URL:
 import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({
-  apiKey: 'your-api-key',
+  apiKey: process.env.REQUESTY_API_KEY,
   baseURL: 'https://router.requesty.ai/v1',
 });
 ```
@@ -132,7 +148,7 @@ Add custom headers to all requests:
 import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({
-  apiKey: 'your-api-key',
+  apiKey: process.env.REQUESTY_API_KEY,
   headers: {
     'Custom-Header': 'custom-value',
   },
@@ -146,7 +162,7 @@ Configure model-specific settings:
 ```typescript
 import { createRequesty } from '@requesty/ai-sdk';
 
-const requesty = createRequesty({ apiKey: 'your-api-key' });
+const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
 const model = requesty('openai/gpt-4o', {
   // Specific model to use with this request
   models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],

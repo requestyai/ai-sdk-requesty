@@ -1,6 +1,6 @@
 {
   "name": "@requesty/ai-sdk",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "license": "Apache-2.0",
   "sideEffects": false,
   "main": "./dist/index.js",
@@ -38,7 +38,8 @@
   },
   "dependencies": {
     "@ai-sdk/provider": "1.0.9",
-    "@ai-sdk/provider-utils": "2.1.10"
+    "@ai-sdk/provider-utils": "2.1.10",
+    "@requesty/ai-sdk": "^0.0.3"
   },
   "devDependencies": {
     "@edge-runtime/vm": "5.0.0",
