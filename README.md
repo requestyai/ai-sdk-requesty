@@ -30,15 +30,14 @@ import { requesty } from '@ai-sdk/requesty';
 import { generateText } from 'ai';
 
 const { text } = await generateText({
-  model: requesty('openai/gpt-4o'),
-  prompt: 'Write a vegetarian lasagna recipe for 4 people.',
+	model: requesty('openai/gpt-4o'),
+	prompt: 'Write a vegetarian lasagna recipe for 4 people.',
 });
 ```
 
 ## Supported models
 
-This list is not a definitive list of models supported by Requesty, as it constantly changes as we add new models (and deprecate old ones) to our system.
-You can find the latest list of models supported by Requesty [here](hhttps://www.requesty.ai/solution/llm-routing/models).
+This list is not a definitive list of models supported by Requesty, as it constantly changes as we add new models (and deprecate old ones) to our system. You can find the latest list of models supported by Requesty [here](hhttps://www.requesty.ai/solution/llm-routing/models).
 
 You can find the latest list of tool-supported models supported by Requesty [here](https://www.requesty.ai/solution/llm-routing/models). (Note: This list may contain models that are not compatible with the AI SDK.)
 
@@ -53,17 +52,15 @@ There are 3 ways to pass extra body to Requesty:
    import { streamText } from 'ai';
 
    const requesty = createRequesty({ apiKey: 'your-api-key' });
-   const model = requesty('anthropic/claude-3.7-sonnet:thinking');
+   const model = requesty('anthropic/claude-3.7-sonnet');
    await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
-     providerOptions: {
-       requesty: {
-         reasoning: {
-           max_tokens: 10,
-         },
-       },
-     },
+   	model,
+   	messages: [{ role: 'user', content: 'Hello' }],
+   	providerOptions: {
+   		requesty: {
+   			custom_field: 'value',
+   		},
+   	},
    });
    ```
 
@@ -74,16 +71,14 @@ There are 3 ways to pass extra body to Requesty:
    import { streamText } from 'ai';
 
    const requesty = createRequesty({ apiKey: 'your-api-key' });
-   const model = requesty('anthropic/claude-3.7-sonnet:thinking', {
-     extraBody: {
-       reasoning: {
-         max_tokens: 10,
-       },
-     },
+   const model = requesty('anthropic/claude-3.7-sonnet', {
+   	extraBody: {
+   		custom_field: 'value',
+   	},
    });
    await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
+   	model,
+   	messages: [{ role: 'user', content: 'Hello' }],
    });
    ```
 
@@ -94,63 +89,23 @@ There are 3 ways to pass extra body to Requesty:
    import { streamText } from 'ai';
 
    const requesty = createRequesty({
-     apiKey: 'your-api-key',
-     extraBody: {
-       reasoning: {
-         max_tokens: 10,
-       },
-     },
+   	apiKey: 'your-api-key',
+   	extraBody: {
+   		custom_field: 'value',
+   	},
    });
-   const model = requesty('anthropic/claude-3.7-sonnet:thinking');
+   const model = requesty('anthropic/claude-3.7-sonnet');
    await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
+   	model,
+   	messages: [{ role: 'user', content: 'Hello' }],
    });
    ```
-
-## Anthropic Prompt Caching
-
-You can include Anthropic-specific options directly in your messages when using functions like `streamText`. The Requesty provider will automatically convert these messages to the correct format internally.
-
-### Basic Usage
-
-```typescript
-import { createRequesty } from '@ai-sdk/requesty';
-import { streamText } from 'ai';
-
-const requesty = createRequesty({ apiKey: 'your-api-key' });
-const model = requesty('anthropic/<supported-caching-model>');
-
-await streamText({
-  model,
-  messages: [
-    {
-      role: 'system',
-      content: 'You are a helpful assistant.',
-      // Add provider options at the message level
-      providerMetadata: {
-        // requesty or anthropic
-        requesty: {
-          // cache_control also works
-          // cache_control: { type: 'ephemeral' }
-          cacheControl: { type: 'ephemeral' },
-        },
-      },
-    },
-    {
-      role: 'user',
-      content: 'Hello, how are you?',
-    },
-  ],
-});
-```
 
 ## Features
 
 - **Access to 300+ LLMs**: Use a single API to access models from OpenAI, Anthropic, Google, Mistral, and many more
 - **Streaming Support**: Full support for streaming responses for real-time applications
 - **Tool Calling**: Utilize function/tool calling capabilities with supported models
-- **Cache Control**: Fine-grained control over prompt caching behavior
 - **Type Safety**: Built with TypeScript for enhanced developer experience
 - **AI SDK Integration**: Seamless integration with the AI SDK ecosystem
 
@@ -164,8 +119,8 @@ You can configure Requesty to use a custom API URL:
 import { createRequesty } from '@ai-sdk/requesty';
 
 const requesty = createRequesty({
-  apiKey: 'your-api-key',
-  baseURL: 'https://router.requesty.ai/v1'
+	apiKey: 'your-api-key',
+	baseURL: 'https://router.requesty.ai/v1',
 });
 ```
 
@@ -177,10 +132,10 @@ Add custom headers to all requests:
 import { createRequesty } from '@ai-sdk/requesty';
 
 const requesty = createRequesty({
-  apiKey: 'your-api-key',
-  headers: {
-    'Custom-Header': 'custom-value'
-  }
+	apiKey: 'your-api-key',
+	headers: {
+		'Custom-Header': 'custom-value',
+	},
 });
 ```
 
@@ -193,24 +148,21 @@ import { createRequesty } from '@ai-sdk/requesty';
 
 const requesty = createRequesty({ apiKey: 'your-api-key' });
 const model = requesty('openai/gpt-4o', {
-  // Specific model to use with this request
-  models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],
+	// Specific model to use with this request
+	models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],
 
-  // Control the bias of specific tokens in the model's vocabulary
-  logitBias: { 50256: -100 },
+	// Control the bias of specific tokens in the model's vocabulary
+	logitBias: { 50256: -100 },
 
-  // Request token-level log probabilities
-  logprobs: 5,
+	// Request token-level log probabilities
+	logprobs: 5,
 
-  // Include reasoning/thinking capabilities (for supported models)
-  includeReasoning: true,
+	// User identifier for tracking or rate limiting
+	user: 'user-123',
 
-  // User identifier for tracking or rate limiting
-  user: 'user-123',
-
-  // Additional body parameters
-  extraBody: {
-    custom_field: 'value'
-  }
+	// Additional body parameters
+	extraBody: {
+		custom_field: 'value',
+	},
 });
 ```
