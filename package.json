@@ -1,5 +1,5 @@
 {
-  "name": "@ai-sdk/requesty",
+  "name": "@requesty/ai-sdk",
   "version": "0.0.1",
   "license": "Apache-2.0",
   "sideEffects": false,
