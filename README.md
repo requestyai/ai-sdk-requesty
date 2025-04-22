@@ -6,32 +6,32 @@ The [Requesty](https://requesty.ai/) provider for the [AI SDK](https://sdk.verce
 
 ```bash
 # For pnpm
-pnpm add @ai-sdk/requesty
+pnpm add @requesty/ai-sdk
 
 # For npm
-npm install @ai-sdk/requesty
+npm install @requesty/ai-sdk
 
 # For yarn
-yarn add @ai-sdk/requesty
+yarn add @requesty/ai-sdk
 ```
 
 ## Provider Instance
 
-You can import the default provider instance `requesty` from `@ai-sdk/requesty`:
+You can import the default provider instance `requesty` from `@requesty/ai-sdk`:
 
 ```ts
-import { requesty } from '@ai-sdk/requesty';
+import { requesty } from '@requesty/ai-sdk';
 ```
 
 ## Example
 
 ```ts
-import { requesty } from '@ai-sdk/requesty';
+import { requesty } from '@requesty/ai-sdk';
 import { generateText } from 'ai';
 
 const { text } = await generateText({
-	model: requesty('openai/gpt-4o'),
-	prompt: 'Write a vegetarian lasagna recipe for 4 people.',
+  model: requesty('openai/gpt-4o'),
+  prompt: 'Write a vegetarian lasagna recipe for 4 people.',
 });
 ```
 
@@ -48,56 +48,56 @@ There are 3 ways to pass extra body to Requesty:
 1. Via the `providerOptions.requesty` property:
 
    ```typescript
-   import { createRequesty } from '@ai-sdk/requesty';
+   import { createRequesty } from '@requesty/ai-sdk';
    import { streamText } from 'ai';
 
    const requesty = createRequesty({ apiKey: 'your-api-key' });
    const model = requesty('anthropic/claude-3.7-sonnet');
    await streamText({
-   	model,
-   	messages: [{ role: 'user', content: 'Hello' }],
-   	providerOptions: {
-   		requesty: {
-   			custom_field: 'value',
-   		},
-   	},
+     model,
+     messages: [{ role: 'user', content: 'Hello' }],
+     providerOptions: {
+       requesty: {
+         custom_field: 'value',
+       },
+     },
    });
    ```
 
 2. Via the `extraBody` property in the model settings:
 
    ```typescript
-   import { createRequesty } from '@ai-sdk/requesty';
+   import { createRequesty } from '@requesty/ai-sdk';
    import { streamText } from 'ai';
 
    const requesty = createRequesty({ apiKey: 'your-api-key' });
    const model = requesty('anthropic/claude-3.7-sonnet', {
-   	extraBody: {
-   		custom_field: 'value',
-   	},
+     extraBody: {
+       custom_field: 'value',
+     },
    });
    await streamText({
-   	model,
-   	messages: [{ role: 'user', content: 'Hello' }],
+     model,
+     messages: [{ role: 'user', content: 'Hello' }],
    });
    ```
 
 3. Via the `extraBody` property in the model factory.
 
    ```typescript
-   import { createRequesty } from '@ai-sdk/requesty';
+   import { createRequesty } from '@requesty/ai-sdk';
    import { streamText } from 'ai';
 
    const requesty = createRequesty({
-   	apiKey: 'your-api-key',
-   	extraBody: {
-   		custom_field: 'value',
-   	},
+     apiKey: 'your-api-key',
+     extraBody: {
+       custom_field: 'value',
+     },
    });
    const model = requesty('anthropic/claude-3.7-sonnet');
    await streamText({
-   	model,
-   	messages: [{ role: 'user', content: 'Hello' }],
+     model,
+     messages: [{ role: 'user', content: 'Hello' }],
    });
    ```
 
@@ -116,11 +116,11 @@ There are 3 ways to pass extra body to Requesty:
 You can configure Requesty to use a custom API URL:
 
 ```typescript
-import { createRequesty } from '@ai-sdk/requesty';
+import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({
-	apiKey: 'your-api-key',
-	baseURL: 'https://router.requesty.ai/v1',
+  apiKey: 'your-api-key',
+  baseURL: 'https://router.requesty.ai/v1',
 });
 ```
 
@@ -129,13 +129,13 @@ const requesty = createRequesty({
 Add custom headers to all requests:
 
 ```typescript
-import { createRequesty } from '@ai-sdk/requesty';
+import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({
-	apiKey: 'your-api-key',
-	headers: {
-		'Custom-Header': 'custom-value',
-	},
+  apiKey: 'your-api-key',
+  headers: {
+    'Custom-Header': 'custom-value',
+  },
 });
 ```
 
@@ -144,25 +144,25 @@ const requesty = createRequesty({
 Configure model-specific settings:
 
 ```typescript
-import { createRequesty } from '@ai-sdk/requesty';
+import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({ apiKey: 'your-api-key' });
 const model = requesty('openai/gpt-4o', {
-	// Specific model to use with this request
-	models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],
+  // Specific model to use with this request
+  models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],
 
-	// Control the bias of specific tokens in the model's vocabulary
-	logitBias: { 50256: -100 },
+  // Control the bias of specific tokens in the model's vocabulary
+  logitBias: { 50256: -100 },
 
-	// Request token-level log probabilities
-	logprobs: 5,
+  // Request token-level log probabilities
+  logprobs: 5,
 
-	// User identifier for tracking or rate limiting
-	user: 'user-123',
+  // User identifier for tracking or rate limiting
+  user: 'user-123',
 
-	// Additional body parameters
-	extraBody: {
-		custom_field: 'value',
-	},
+  // Additional body parameters
+  extraBody: {
+    custom_field: 'value',
+  },
 });
 ```
