@@ -38,9 +38,9 @@ const { text } = await generateText({
 ## Supported models
 
 This list is not a definitive list of models supported by Requesty, as it constantly changes as we add new models (and deprecate old ones) to our system.
-You can find the latest list of models supported by Requesty [here](https://requesty.ai/models).
+You can find the latest list of models supported by Requesty [here](hhttps://www.requesty.ai/solution/llm-routing/models).
 
-You can find the latest list of tool-supported models supported by Requesty [here](https://requesty.ai/models?order=newest&supported_parameters=tools). (Note: This list may contain models that are not compatible with the AI SDK.)
+You can find the latest list of tool-supported models supported by Requesty [here](https://www.requesty.ai/solution/llm-routing/models). (Note: This list may contain models that are not compatible with the AI SDK.)
 
 ## Passing Extra Body to Requesty
 
@@ -165,7 +165,7 @@ import { createRequesty } from '@ai-sdk/requesty';
 
 const requesty = createRequesty({
   apiKey: 'your-api-key',
-  baseURL: 'https://your-custom-requesty-url.com'
+  baseURL: 'https://router.requesty.ai/v1'
 });
 ```
 
