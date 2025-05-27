@@ -149,7 +149,7 @@ export function convertToRequestyChatMessages(
 
         messages.push({
           role: 'assistant',
-          content: text,
+          content: !text && toolCalls.length > 0 ? undefined : text,
           tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
           cache_control: getCacheControl(providerMetadata),
         });
