@@ -129,7 +129,7 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
 
       // Requesty specific settings:
       include_reasoning: this.settings.includeReasoning,
-      reasoning: this.settings.reasoning,
+      reasoning_effort: this.settings.reasoningEffort,
 
       // extra body:
       ...this.config.extraBody,
