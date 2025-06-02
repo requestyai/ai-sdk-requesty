@@ -8,24 +8,14 @@ export type RequestyLanguageModel = LanguageModelV1;
 export type RequestyProviderOptions = {
   /**
   * Include reasoning in the response (when supported)
-  * https://requesty.ai/docs/use-cases/reasoning-tokens
+  * https://docs.requesty.ai/features/reasoning
   */
   includeReasoning?: boolean;
 
   /**
-  * Add direct reasoning tokens to the prompt / message template.
+  * Reasoning effort (when supported)
   */
-  reasoning?: {
-    /**
-    * Maximum tokens to use for reasoning
-    */
-    max_tokens?: number;
-
-    /**
-    * The reasoning prefix to use in the template
-    */
-    prefix?: string;
-  };
+  reasoningEffort?: 'low' | 'medium' | 'high';
 
   /**
   * A unique identifier representing your end-user, which can
