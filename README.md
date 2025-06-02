@@ -30,7 +30,6 @@ set REQUESTY_API_KEY=your_api_key_here
 $env:REQUESTY_API_KEY="your_api_key_here"
 ```
 
-
 ## Provider Instance
 
 You can import the default provider instance `requesty` from `@requesty/ai-sdk`:
@@ -124,6 +123,111 @@ There are 3 ways to pass extra body to Requesty:
 - **Tool Calling**: Utilize function/tool calling capabilities with supported models
 - **Type Safety**: Built with TypeScript for enhanced developer experience
 - **AI SDK Integration**: Seamless integration with the AI SDK ecosystem
+
+## Reasoning
+
+Enable reasoning tokens to get insight into the model's reasoning process. Reasoning tokens provide a transparent view of the model's thought steps and are billed as output tokens.
+
+### Reasoning Effort Values
+
+Requesty supports multiple reasoning effort levels:
+
+- `'low'` - Minimal reasoning effort
+- `'medium'` - Moderate reasoning effort
+- `'high'` - High reasoning effort
+- `'max'` - Maximum reasoning effort (Requesty-specific)
+- Budget strings (e.g., `"10000"`) - Specific token budget for reasoning
+
+### Provider-Specific Behavior
+
+**OpenAI Models:**
+
+- Accept effort values: `'low'`, `'medium'`, `'high'`
+- `'max'` is converted to `'high'`
+- Budget strings are converted to effort values:
+  - 0-1024 → `'low'`
+  - 1025-8192 → `'medium'`
+  - 8193+ → `'high'`
+- **Note**: OpenAI does NOT share actual reasoning tokens in the response
+
+**Anthropic Models:**
+
+- Effort values are converted to token budgets:
+  - `'low'` → 1024 tokens
+  - `'medium'` → 8192 tokens
+  - `'high'` → 16384 tokens
+  - `'max'` → max output tokens - 1
+- Budget strings are passed directly
+- Reasoning content appears under `reasoning_content` in the response
+
+**Deepseek Models:**
+
+- Enable reasoning automatically (no configuration needed)
+- Reasoning content appears under `reasoning_content` in the response
+
+### Usage Examples
+
+#### Using Reasoning Effort
+
+```typescript
+import { createRequesty } from '@requesty/ai-sdk';
+import { generateText } from 'ai';
+
+const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
+
+// Using effort string
+const { text, reasoning } = await generateText({
+  model: requesty('openai/o3-mini', {
+    reasoningEffort: 'medium',
+  }),
+  prompt: 'Solve this complex problem step by step...',
+});
+
+console.log('Response:', text);
+console.log('Reasoning:', reasoning);
+```
+
+#### Using Budget (Token Limit)
+
+```typescript
+import { createRequesty } from '@requesty/ai-sdk';
+import { generateText } from 'ai';
+
+const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
+
+// Using budget string for precise control
+const { text, reasoning } = await generateText({
+  model: requesty('anthropic/claude-sonnet-4-0', {
+    reasoningEffort: '10000', // 10,000 token budget
+  }),
+  prompt: 'Analyze this complex scenario...',
+});
+```
+
+#### Via Provider Options
+
+```typescript
+import { createRequesty } from '@requesty/ai-sdk';
+import { generateText } from 'ai';
+
+const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
+
+const { text, reasoning } = await generateText({
+  model: requesty('openai/o3-mini'),
+  prompt: 'Think through this problem carefully...',
+  providerOptions: {
+    requesty: {
+      reasoning_effort: 'high',
+    },
+  },
+});
+```
+
+### Supported Reasoning Models
+
+- **OpenAI**: `openai/o3-mini`, `openai/o3`
+- **Anthropic**: `anthropic/claude-sonnet-4-0`, other Claude reasoning models
+- **Deepseek**: All Deepseek reasoning models (automatic reasoning)
 
 ## Advanced Configuration
 
