@@ -160,8 +160,8 @@ async function testPublishedPackageAnthropicReasoning() {
 }
 
 async function runPublishedPackageTests() {
-  console.log('🎯 Testing Published @requesty/ai-sdk@0.0.6 Package...\n');
-  console.log('📦 Package: @requesty/ai-sdk@0.0.6');
+  console.log('🎯 Testing Published @requesty/ai-sdk@0.0.7 Package...\n');
+  console.log('📦 Package: @requesty/ai-sdk@0.0.7');
   console.log(
     '🆕 New Feature: Reasoning support with reasoningEffort parameter\n',
   );
@@ -177,14 +177,14 @@ async function runPublishedPackageTests() {
 
     console.log('\n🎉 ALL PUBLISHED PACKAGE TESTS PASSED!');
     console.log('\n📚 Key Results:');
-    console.log('✅ Published package @requesty/ai-sdk@0.0.6 works correctly');
+    console.log('✅ Published package @requesty/ai-sdk@0.0.7 works correctly');
     console.log('✅ Reasoning with effort strings (low/medium/high/max) works');
     console.log('✅ Budget strings are supported via providerOptions');
     console.log('✅ All reasoning modes are properly implemented');
     console.log('✅ The npm package is ready for production use!');
 
     console.log('\n🚀 Users can now install with:');
-    console.log('   npm install @requesty/ai-sdk@0.0.6');
+    console.log('   npm install @requesty/ai-sdk@0.0.7');
     console.log('\n📖 And use reasoning like:');
     console.log(
       "   const model = requesty.chat('openai/o3-mini', { reasoningEffort: 'medium' });",
