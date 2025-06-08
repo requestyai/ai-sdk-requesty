@@ -33,6 +33,7 @@ import {
   RequestyErrorResponseSchema,
   requestyFailedResponseHandler,
 } from './requesty-error';
+import type { RequestyProviderMetadata, RequestyUsage } from '@/src/types';
 
 function isFunctionTool(
   tool: LanguageModelV1FunctionTool | LanguageModelV1ProviderDefinedTool,
@@ -202,6 +203,17 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
       throw new Error('No choice in response');
     }
 
+    const providerMetadata = response.usage?.prompt_tokens_details
+      ? {
+          requesty: {
+            usage: {
+              cachingTokens: response.usage.prompt_tokens_details.caching_tokens ?? 0,
+              cachedTokens: response.usage.prompt_tokens_details.cached_tokens ?? 0,
+            },
+          },
+        } satisfies RequestyProviderMetadata
+      : undefined;
+
     return {
       response: {
         id: response.id,
@@ -220,6 +232,7 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
         promptTokens: response.usage?.prompt_tokens ?? 0,
         completionTokens: response.usage?.completion_tokens ?? 0,
       },
+      providerMetadata,
       rawCall: { rawPrompt, rawSettings },
       rawResponse: { headers: responseHeaders },
       warnings: [],
@@ -276,6 +289,8 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
     };
     let logprobs: LanguageModelV1LogProbs;
 
+    const requestyUsage: Partial<RequestyUsage> = {};
+
     return {
       stream: response.pipeThrough(
         new TransformStream<
@@ -320,6 +335,9 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
                 promptTokens: value.usage.prompt_tokens,
                 completionTokens: value.usage.completion_tokens,
               };
+
+              requestyUsage.cachingTokens = value.usage.prompt_tokens_details?.caching_tokens ?? 0;
+              requestyUsage.cachedTokens = value.usage.prompt_tokens_details?.cached_tokens ?? 0;
             }
 
             const choice = value.choices[0];
@@ -490,11 +508,23 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
               }
             }
 
+            // Prepare provider metadata with Requesty usage information
+            const providerMetadata: RequestyProviderMetadata = {
+              requesty: {
+                usage: requestyUsage.cachedTokens !== undefined &&
+                  requestyUsage.cachingTokens !== undefined
+                  ? requestyUsage
+                  : undefined,
+              },
+            }
+
+            const hasProviderMetadata = providerMetadata.requesty.usage !== undefined;
             controller.enqueue({
               type: 'finish',
               finishReason,
               logprobs,
               usage,
+              ...(hasProviderMetadata ? { providerMetadata } : {}),
             });
           },
         }),
@@ -514,6 +544,12 @@ const RequestyChatCompletionBaseResponseSchema = z.object({
       prompt_tokens: z.number(),
       completion_tokens: z.number(),
       total_tokens: z.number(),
+      prompt_tokens_details: z
+        .object({
+          caching_tokens: z.number().optional(),
+          cached_tokens: z.number().optional(),
+        })
+        .optional(),
     })
     .nullish(),
 });
