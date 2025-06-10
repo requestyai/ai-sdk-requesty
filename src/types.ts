@@ -38,3 +38,14 @@ export type RequestySharedSettings = RequestyProviderOptions & {
    */
   models?: string[];
 };
+
+export type RequestyUsage = {
+  cachingTokens?: number;
+  cachedTokens?: number;
+};
+
+export type RequestyProviderMetadata = {
+  requesty: {
+    usage?: RequestyUsage;
+  };
+};
