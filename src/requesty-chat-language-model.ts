@@ -1,10 +1,13 @@
+import type { RequestyProviderMetadata, RequestyUsage } from '@/src/types';
 import type {
-  LanguageModelV1,
-  LanguageModelV1FinishReason,
-  LanguageModelV1FunctionTool,
-  LanguageModelV1LogProbs,
-  LanguageModelV1ProviderDefinedTool,
-  LanguageModelV1StreamPart,
+  LanguageModelV2,
+  LanguageModelV2CallOptions,
+  LanguageModelV2CallWarning,
+  LanguageModelV2FinishReason,
+  LanguageModelV2FunctionTool,
+  LanguageModelV2LogProbs,
+  LanguageModelV2ProviderDefinedTool,
+  LanguageModelV2StreamPart,
 } from '@ai-sdk/provider';
 import type { ParseResult } from '@ai-sdk/provider-utils';
 import type {
@@ -33,11 +36,10 @@ import {
   RequestyErrorResponseSchema,
   requestyFailedResponseHandler,
 } from './requesty-error';
-import type { RequestyProviderMetadata, RequestyUsage } from '@/src/types';
 
 function isFunctionTool(
-  tool: LanguageModelV1FunctionTool | LanguageModelV1ProviderDefinedTool,
-): tool is LanguageModelV1FunctionTool {
+  tool: LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool,
+): tool is LanguageModelV2FunctionTool {
   return 'parameters' in tool;
 }
 
@@ -50,9 +52,10 @@ type RequestyChatConfig = {
   extraBody?: Record<string, unknown>;
 };
 
-export class RequestyChatLanguageModel implements LanguageModelV1 {
-  readonly specificationVersion = 'v1';
+export class RequestyChatLanguageModel implements LanguageModelV2 {
+  readonly specificationVersion = 'v2';
   readonly defaultObjectGenerationMode = 'tool';
+  readonly supportedUrls = {};
 
   readonly modelId: RequestyChatModelId;
   readonly settings: RequestyChatSettings;
@@ -86,7 +89,7 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
     responseFormat,
     topK,
     providerMetadata,
-  }: Parameters<LanguageModelV1['doGenerate']>[0]) {
+  }: LanguageModelV2CallOptions) {
     const type = mode.type;
     const extraCallingBody = providerMetadata?.['requesty'] ?? {};
 
@@ -126,7 +129,7 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
       top_k: topK,
 
       // messages:
-      messages: convertToRequestyChatMessages(prompt),
+      messages: convertToRequestyChatMessages(prompt, providerMetadata),
 
       // Requesty specific settings:
       include_reasoning: this.settings.includeReasoning,
@@ -176,9 +179,34 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
       }
     }
   }
-  async doGenerate(
-    options: Parameters<LanguageModelV1['doGenerate']>[0],
-  ): Promise<Awaited<ReturnType<LanguageModelV1['doGenerate']>>> {
+
+  async doGenerate(options: LanguageModelV2CallOptions): Promise<{
+    response: {
+      id: string;
+      modelId: string;
+    };
+    contentParts: Array<
+      | { type: 'text'; text: string }
+      | { type: 'reasoning'; text: string }
+      | {
+          type: 'tool-call';
+          toolCallType: 'function';
+          toolCallId: string;
+          toolName: string;
+          args: unknown;
+        }
+    >;
+    finishReason: LanguageModelV2FinishReason;
+    usage: {
+      promptTokens: number;
+      completionTokens: number;
+    };
+    logprobs?: LanguageModelV2LogProbs;
+    rawCall: { rawPrompt: unknown; rawSettings: unknown };
+    rawResponse?: { headers?: Record<string, string> };
+    warnings?: LanguageModelV2CallWarning[];
+    providerMetadata?: RequestyProviderMetadata;
+  }> {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
@@ -204,45 +232,84 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
     }
 
     const providerMetadata = response.usage?.prompt_tokens_details
-      ? {
+      ? ({
           requesty: {
             usage: {
-              cachingTokens: response.usage.prompt_tokens_details.caching_tokens ?? 0,
-              cachedTokens: response.usage.prompt_tokens_details.cached_tokens ?? 0,
+              cachingTokens:
+                response.usage.prompt_tokens_details.caching_tokens ?? 0,
+              cachedTokens:
+                response.usage.prompt_tokens_details.cached_tokens ?? 0,
             },
           },
-        } satisfies RequestyProviderMetadata
+        } satisfies RequestyProviderMetadata)
       : undefined;
+
+    // Convert to content parts format
+    const contentParts: Array<
+      | { type: 'text'; text: string }
+      | { type: 'reasoning'; text: string }
+      | {
+          type: 'tool-call';
+          toolCallType: 'function';
+          toolCallId: string;
+          toolName: string;
+          args: unknown;
+        }
+    > = [];
+
+    // Add text content
+    if (choice.message.content) {
+      contentParts.push({
+        type: 'text',
+        text: choice.message.content,
+      });
+    }
+
+    // Add reasoning content if present
+    if (choice.message.reasoning) {
+      contentParts.push({
+        type: 'reasoning',
+        text: choice.message.reasoning,
+      });
+    }
+
+    // Add tool calls
+    if (choice.message.tool_calls) {
+      for (const toolCall of choice.message.tool_calls) {
+        contentParts.push({
+          type: 'tool-call',
+          toolCallType: 'function',
+          toolCallId: toolCall.id,
+          toolName: toolCall.function.name,
+          args: isParsableJson(toolCall.function.arguments)
+            ? JSON.parse(toolCall.function.arguments)
+            : toolCall.function.arguments,
+        });
+      }
+    }
 
     return {
       response: {
         id: response.id,
         modelId: response.model,
       },
-      text: choice.message.content ?? undefined,
-      reasoning: choice.message.reasoning ?? undefined,
-      toolCalls: choice.message.tool_calls?.map((toolCall) => ({
-        toolCallType: 'function',
-        toolCallId: toolCall.id ?? generateId(),
-        toolName: toolCall.function.name,
-        args: toolCall.function.arguments!,
-      })),
+      contentParts,
       finishReason: mapRequestyFinishReason(choice.finish_reason),
       usage: {
         promptTokens: response.usage?.prompt_tokens ?? 0,
         completionTokens: response.usage?.completion_tokens ?? 0,
       },
-      providerMetadata,
+      logprobs: mapRequestyChatLogProbsOutput(choice.logprobs),
       rawCall: { rawPrompt, rawSettings },
       rawResponse: { headers: responseHeaders },
       warnings: [],
-      logprobs: mapRequestyChatLogProbsOutput(choice.logprobs),
+      ...(providerMetadata ? { providerMetadata } : {}),
     };
   }
 
   async doStream(
-    options: Parameters<LanguageModelV1['doStream']>[0],
-  ): Promise<Awaited<ReturnType<LanguageModelV1['doStream']>>> {
+    options: Parameters<LanguageModelV2['doStream']>[0],
+  ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
@@ -282,22 +349,20 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
       sent: boolean;
     }> = [];
 
-    let finishReason: LanguageModelV1FinishReason = 'other';
+    let finishReason: LanguageModelV2FinishReason = 'other';
     let usage: { promptTokens: number; completionTokens: number } = {
       promptTokens: Number.NaN,
       completionTokens: Number.NaN,
     };
-    let logprobs: LanguageModelV1LogProbs;
+    let logprobs: LanguageModelV2LogProbs;
 
     const requestyUsage: Partial<RequestyUsage> = {};
 
     return {
       stream: response.pipeThrough(
         new TransformStream<
-          ParseResult<
-            z.infer<typeof RequestyStreamChatCompletionChunkSchema>
-          >,
-          LanguageModelV1StreamPart
+          ParseResult<z.infer<typeof RequestyStreamChatCompletionChunkSchema>>,
+          LanguageModelV2StreamPart
         >({
           transform(chunk, controller) {
             // handle failed chunk parsing / validation:
@@ -336,8 +401,10 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
                 completionTokens: value.usage.completion_tokens,
               };
 
-              requestyUsage.cachingTokens = value.usage.prompt_tokens_details?.caching_tokens ?? 0;
-              requestyUsage.cachedTokens = value.usage.prompt_tokens_details?.cached_tokens ?? 0;
+              requestyUsage.cachingTokens =
+                value.usage.prompt_tokens_details?.caching_tokens ?? 0;
+              requestyUsage.cachedTokens =
+                value.usage.prompt_tokens_details?.cached_tokens ?? 0;
             }
 
             const choice = value.choices[0];
@@ -511,14 +578,16 @@ export class RequestyChatLanguageModel implements LanguageModelV1 {
             // Prepare provider metadata with Requesty usage information
             const providerMetadata: RequestyProviderMetadata = {
               requesty: {
-                usage: requestyUsage.cachedTokens !== undefined &&
+                usage:
+                  requestyUsage.cachedTokens !== undefined &&
                   requestyUsage.cachingTokens !== undefined
-                  ? requestyUsage
-                  : undefined,
+                    ? requestyUsage
+                    : undefined,
               },
-            }
+            };
 
-            const hasProviderMetadata = providerMetadata.requesty.usage !== undefined;
+            const hasProviderMetadata =
+              providerMetadata.requesty.usage !== undefined;
             controller.enqueue({
               type: 'finish',
               finishReason,
@@ -655,7 +724,7 @@ const RequestyStreamChatCompletionChunkSchema = z.union([
 ]);
 
 function prepareToolsAndToolChoice(
-  mode: Parameters<LanguageModelV1['doGenerate']>[0]['mode'] & {
+  mode: Parameters<LanguageModelV2['doGenerate']>[0]['mode'] & {
     type: 'regular';
   },
 ) {
