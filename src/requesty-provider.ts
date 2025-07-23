@@ -135,7 +135,6 @@ export function createRequesty(
       headers: getHeaders,
       compatibility,
       fetch: options.fetch,
-      extraBody: options.extraBody,
     });
 
   const createLanguageModel = (

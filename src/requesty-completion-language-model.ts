@@ -69,7 +69,6 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
     stopSequences,
     providerOptions,
   }: LanguageModelV2CallOptions) {
-    const type = 'completion';
     const extraCallingBody = providerOptions?.['requesty'] ?? {};
 
     return {
@@ -77,7 +76,6 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
       model: this.modelId,
 
       // model specific settings:
-      echo: this.settings.echo,
       logit_bias: this.settings.logitBias,
       logprobs: this.settings.logprobs,
       suffix: this.settings.suffix,

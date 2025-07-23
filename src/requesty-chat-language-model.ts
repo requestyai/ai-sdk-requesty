@@ -232,9 +232,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
       for (const toolCall of choice.message.tool_calls) {
         content.push({
           type: 'tool-call',
-          id: toolCall.id ?? generateId(),
+          toolCallId: toolCall.id ?? generateId(),
           toolName: toolCall.function.name,
-          arguments: isParsableJson(toolCall.function.arguments)
+          input: isParsableJson(toolCall.function.arguments)
             ? JSON.parse(toolCall.function.arguments)
             : toolCall.function.arguments,
         });
@@ -454,8 +454,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     // send tool call
                     controller.enqueue({
                       type: 'tool-call',
+                      toolCallId: toolCall.id,
                       toolName: toolCall.function.name,
-                      arguments: toolCall.function.arguments,
+                      input: isParsableJson(toolCall.function.arguments)
+                        ? JSON.parse(toolCall.function.arguments)
+                        : toolCall.function.arguments,
                     });
 
                     toolCall.sent = true;
@@ -491,8 +494,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 ) {
                   controller.enqueue({
                     type: 'tool-call',
+                    toolCallId: toolCall.id,
                     toolName: toolCall.function.name,
-                    arguments: toolCall.function.arguments,
+                    input: isParsableJson(toolCall.function.arguments)
+                      ? JSON.parse(toolCall.function.arguments)
+                      : toolCall.function.arguments,
                   });
 
                   toolCall.sent = true;
@@ -508,9 +514,10 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 if (!toolCall.sent) {
                   controller.enqueue({
                     type: 'tool-call',
+                    toolCallId: toolCall.id,
                     toolName: toolCall.function.name,
-                    arguments: isParsableJson(toolCall.function.arguments)
-                      ? toolCall.function.arguments
+                    input: isParsableJson(toolCall.function.arguments)
+                      ? JSON.parse(toolCall.function.arguments)
                       : '{}',
                   });
                   toolCall.sent = true;
@@ -664,7 +671,7 @@ function prepareToolsAndToolChoice({
       function: {
         name: tool.name,
         description: tool.description,
-        parameters: tool.parameters,
+        parameters: tool.inputSchema,
       },
     };
   });
