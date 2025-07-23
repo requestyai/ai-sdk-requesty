@@ -1,18 +1,30 @@
-# Requesty Provider for AI SDK
+# Requesty Provider for AI SDK v5
 
-The [Requesty](https://requesty.ai/) provider for the [AI SDK](https://sdk.vercel.ai/docs) gives access to over 300 large language models through the Requesty chat and completion APIs.
+The [Requesty](https://requesty.ai/) provider for the [AI SDK v5](https://sdk.vercel.ai/docs) gives access to over 300 large language models through the Requesty chat and completion APIs.
 
-## Setup
+## 🚀 AI SDK v5 Support
+
+This is the **AI SDK v5 compatible** version of the Requesty provider. For AI SDK v4, use the stable version:
+
+```bash
+# AI SDK v5 (Beta)
+npm install @requesty/ai-sdk@beta
+
+# AI SDK v4 (Stable)
+npm install @requesty/ai-sdk@latest
+```
+
+## Installation
 
 ```bash
 # For pnpm
-pnpm add @requesty/ai-sdk
+pnpm add @requesty/ai-sdk@beta ai@beta
 
 # For npm
-npm install @requesty/ai-sdk
+npm install @requesty/ai-sdk@beta ai@beta
 
 # For yarn
-yarn add @requesty/ai-sdk
+yarn add @requesty/ai-sdk@beta ai@beta
 ```
 
 ## API Key Setup
@@ -38,251 +50,411 @@ You can import the default provider instance `requesty` from `@requesty/ai-sdk`:
 import { requesty } from '@requesty/ai-sdk';
 ```
 
-## Example
+## Basic Example
 
 ```ts
 import { requesty } from '@requesty/ai-sdk';
 import { generateText } from 'ai';
 
 const { text } = await generateText({
-  model: requesty('openai/gpt-4o'),
+  model: requesty.chat('openai/gpt-4o'),
   prompt: 'Write a vegetarian lasagna recipe for 4 people.',
 });
 ```
 
-## Supported models
+## AI SDK v5 Features
 
-This list is not a definitive list of models supported by Requesty, as it constantly changes as we add new models (and deprecate old ones) to our system. You can find the latest list of models supported by Requesty [here](hhttps://www.requesty.ai/solution/llm-routing/models).
+### Text Generation
 
-You can find the latest list of tool-supported models supported by Requesty [here](https://www.requesty.ai/solution/llm-routing/models). (Note: This list may contain models that are not compatible with the AI SDK.)
-
-## Passing Extra Body to Requesty
-
-There are 3 ways to pass extra body to Requesty:
-
-1. Via the `providerOptions.requesty` property:
-
-   ```typescript
-   import { createRequesty } from '@requesty/ai-sdk';
-   import { streamText } from 'ai';
-
-   const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-   const model = requesty('anthropic/claude-3.7-sonnet');
-   await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
-     providerOptions: {
-       requesty: {
-         custom_field: 'value',
-       },
-     },
-   });
-   ```
-
-2. Via the `extraBody` property in the model settings:
-
-   ```typescript
-   import { createRequesty } from '@requesty/ai-sdk';
-   import { streamText } from 'ai';
-
-   const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-   const model = requesty('anthropic/claude-3.7-sonnet', {
-     extraBody: {
-       custom_field: 'value',
-     },
-   });
-   await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
-   });
-   ```
-
-3. Via the `extraBody` property in the model factory.
-
-   ```typescript
-   import { createRequesty } from '@requesty/ai-sdk';
-   import { streamText } from 'ai';
-
-   const requesty = createRequesty({
-     apiKey: process.env.REQUESTY_API_KEY,
-     extraBody: {
-       custom_field: 'value',
-     },
-   });
-   const model = requesty('anthropic/claude-3.7-sonnet');
-   await streamText({
-     model,
-     messages: [{ role: 'user', content: 'Hello' }],
-   });
-   ```
-
-## Features
-
-- **Access to 300+ LLMs**: Use a single API to access models from OpenAI, Anthropic, Google, Mistral, and many more
-- **Streaming Support**: Full support for streaming responses for real-time applications
-- **Tool Calling**: Utilize function/tool calling capabilities with supported models
-- **Type Safety**: Built with TypeScript for enhanced developer experience
-- **AI SDK Integration**: Seamless integration with the AI SDK ecosystem
-
-## Reasoning
-
-Enable reasoning tokens to get insight into the model's reasoning process. Reasoning tokens provide a transparent view of the model's thought steps and are billed as output tokens.
-
-### Reasoning Effort Values
-
-Requesty supports multiple reasoning effort levels:
-
-- `'low'` - Minimal reasoning effort
-- `'medium'` - Moderate reasoning effort
-- `'high'` - High reasoning effort
-- `'max'` - Maximum reasoning effort (Requesty-specific)
-- Budget strings (e.g., `"10000"`) - Specific token budget for reasoning
-
-### Provider-Specific Behavior
-
-**OpenAI Models:**
-
-- Accept effort values: `'low'`, `'medium'`, `'high'`
-- `'max'` is converted to `'high'`
-- Budget strings are converted to effort values:
-  - 0-1024 → `'low'`
-  - 1025-8192 → `'medium'`
-  - 8193+ → `'high'`
-- **Note**: OpenAI does NOT share actual reasoning tokens in the response
-
-**Anthropic Models:**
-
-- Effort values are converted to token budgets:
-  - `'low'` → 1024 tokens
-  - `'medium'` → 8192 tokens
-  - `'high'` → 16384 tokens
-  - `'max'` → max output tokens - 1
-- Budget strings are passed directly
-- Reasoning content appears under `reasoning_content` in the response
-
-**Deepseek Models:**
-
-- Enable reasoning automatically (no configuration needed)
-- Reasoning content appears under `reasoning_content` in the response
-
-### Usage Examples
-
-#### Using Reasoning Effort
-
-```typescript
-import { createRequesty } from '@requesty/ai-sdk';
+```ts
 import { generateText } from 'ai';
+import { requesty } from '@requesty/ai-sdk';
 
-const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-
-// Using effort string
-const { text, reasoning } = await generateText({
-  model: requesty('openai/o3-mini', {
-    reasoningEffort: 'medium',
-  }),
-  prompt: 'Solve this complex problem step by step...',
+// Non-streaming
+const { text } = await generateText({
+  model: requesty.chat('openai/gpt-4o'),
+  prompt: 'Explain quantum computing',
+  maxOutputTokens: 500,
 });
 
-console.log('Response:', text);
-console.log('Reasoning:', reasoning);
+// Streaming
+import { streamText } from 'ai';
+
+const { textStream } = streamText({
+  model: requesty.chat('anthropic/claude-3.5-sonnet'),
+  prompt: 'Write a story about AI',
+});
+
+for await (const delta of textStream) {
+  process.stdout.write(delta);
+}
 ```
 
-#### Using Budget (Token Limit)
+### Tool Calling (Function Calling)
 
-```typescript
-import { createRequesty } from '@requesty/ai-sdk';
-import { generateText } from 'ai';
+```ts
+import { generateText, tool } from 'ai';
+import { z } from 'zod';
 
-const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-
-// Using budget string for precise control
-const { text, reasoning } = await generateText({
-  model: requesty('anthropic/claude-sonnet-4-0', {
-    reasoningEffort: '10000', // 10,000 token budget
+const weatherTool = tool({
+  description: 'Get weather information',
+  inputSchema: z.object({
+    location: z.string().describe('The city and country'),
+    unit: z.enum(['celsius', 'fahrenheit']),
   }),
-  prompt: 'Analyze this complex scenario...',
+  execute: async ({ location, unit }) => {
+    // Your weather API call here
+    return `Weather in ${location}: 22°${unit === 'celsius' ? 'C' : 'F'}`;
+  },
+});
+
+const { text } = await generateText({
+  model: requesty.chat('openai/gpt-4o'),
+  prompt: 'What is the weather like in Paris?',
+  tools: {
+    getWeather: weatherTool,
+  },
 });
 ```
 
-#### Via Provider Options
+### Object Generation
 
-```typescript
-import { createRequesty } from '@requesty/ai-sdk';
+```ts
+import { generateObject } from 'ai';
+import { z } from 'zod';
+
+const { object } = await generateObject({
+  model: requesty.chat('openai/gpt-4o'),
+  schema: z.object({
+    name: z.string(),
+    age: z.number(),
+    hobbies: z.array(z.string()),
+  }),
+  prompt: 'Generate a person profile. Return as JSON.',
+});
+
+console.log(object); // { name: "John", age: 30, hobbies: ["reading", "hiking"] }
+```
+
+### Streaming with Tools
+
+```ts
+import { streamText } from 'ai';
+
+const { textStream } = streamText({
+  model: requesty.chat('anthropic/claude-3.5-sonnet'),
+  prompt: 'Get the weather and suggest clothing',
+  tools: {
+    getWeather: weatherTool,
+  },
+});
+
+for await (const delta of textStream) {
+  process.stdout.write(delta);
+}
+```
+
+## Requesty Metadata & Analytics
+
+Track your API usage with custom metadata for powerful analytics in your Requesty dashboard:
+
+```ts
 import { generateText } from 'ai';
 
-const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-
-const { text, reasoning } = await generateText({
-  model: requesty('openai/o3-mini'),
-  prompt: 'Think through this problem carefully...',
+const { text } = await generateText({
+  model: requesty.chat('openai/gpt-4o'),
+  prompt: 'Help with customer support',
   providerOptions: {
     requesty: {
-      reasoning_effort: 'high',
+      tags: ['customer-support', 'billing'],
+      user_id: 'user_12345',
+      trace_id: 'support_session_789',
+      extra: {
+        department: 'customer_success',
+        priority: 'high',
+        country: 'usa',
+      },
     },
   },
 });
 ```
 
-### Supported Reasoning Models
+### Metadata Fields
 
-- **OpenAI**: `openai/o3-mini`, `openai/o3`
-- **Anthropic**: `anthropic/claude-sonnet-4-0`, other Claude reasoning models
-- **Deepseek**: All Deepseek reasoning models (automatic reasoning)
+- **`tags`**: Array of strings for categorizing requests
+- **`user_id`**: Track requests by user
+- **`trace_id`**: Connect related requests in workflows
+- **`extra`**: Custom business context (any key-value pairs)
 
-## Advanced Configuration
+## Provider Configuration
 
-### Custom API URL
+### Basic Configuration
 
-You can configure Requesty to use a custom API URL:
-
-```typescript
+```ts
 import { createRequesty } from '@requesty/ai-sdk';
 
 const requesty = createRequesty({
-  apiKey: process.env.REQUESTY_API_KEY,
-  baseURL: 'https://router.requesty.ai/v1',
+  apiKey: process.env.REQUESTY_API_KEY, // optional if env var is set
+  baseURL: 'https://router.requesty.ai/v1', // optional
 });
 ```
 
-### Headers
+### With Global Metadata
 
-Add custom headers to all requests:
-
-```typescript
-import { createRequesty } from '@requesty/ai-sdk';
-
+```ts
 const requesty = createRequesty({
   apiKey: process.env.REQUESTY_API_KEY,
-  headers: {
-    'Custom-Header': 'custom-value',
-  },
-});
-```
-
-## Model Settings
-
-Configure model-specific settings:
-
-```typescript
-import { createRequesty } from '@requesty/ai-sdk';
-
-const requesty = createRequesty({ apiKey: process.env.REQUESTY_API_KEY });
-const model = requesty('openai/gpt-4o', {
-  // Specific model to use with this request
-  models: ['openai/gpt-4o', 'anthropic/claude-3-opus'],
-
-  // Control the bias of specific tokens in the model's vocabulary
-  logitBias: { 50256: -100 },
-
-  // Request token-level log probabilities
-  logprobs: 5,
-
-  // User identifier for tracking or rate limiting
-  user: 'user-123',
-
-  // Additional body parameters
   extraBody: {
-    custom_field: 'value',
+    requesty: {
+      tags: ['my-app'],
+      extra: {
+        environment: 'production',
+        version: '1.0.0',
+      },
+    },
   },
 });
 ```
+
+## Reasoning Models
+
+Enable reasoning tokens for models that support it (like OpenAI o1, Anthropic, DeepSeek):
+
+```ts
+const { text, reasoning } = await generateText({
+  model: requesty.chat('openai/o1-preview', {
+    reasoningEffort: 'medium', // 'low' | 'medium' | 'high' | 'max'
+  }),
+  prompt: 'Solve this complex math problem step by step...',
+});
+
+console.log('Response:', text);
+console.log('Reasoning:', reasoning); // Step-by-step thinking
+```
+
+### Reasoning Effort Levels
+
+- **`'low'`** - Minimal reasoning effort
+- **`'medium'`** - Moderate reasoning effort
+- **`'high'`** - High reasoning effort
+- **`'max'`** - Maximum reasoning effort (Requesty-specific)
+- **Budget strings** (e.g., `"10000"`) - Specific token budget
+
+## Supported Models
+
+Access 300+ models from top providers:
+
+- **OpenAI**: `openai/gpt-4o`, `openai/gpt-4o-mini`, `openai/o1-preview`
+- **Anthropic**: `anthropic/claude-3.5-sonnet`, `anthropic/claude-3.5-haiku`
+- **Google**: `google/gemini-2.0-flash-exp`, `google/gemini-1.5-pro`
+- **Meta**: `meta-llama/llama-3.3-70b-instruct`
+- **DeepSeek**: `deepseek/deepseek-chat`, `deepseek/deepseek-reasoner`
+- **And many more...**
+
+See the [full model list](https://www.requesty.ai/solution/llm-routing/models) on Requesty.
+
+## Advanced Usage
+
+### Model-Level Configuration
+
+```ts
+const model = requesty.chat('openai/gpt-4o', {
+  reasoningEffort: 'high',
+  extraBody: {
+    requesty: {
+      tags: ['premium-tier'],
+    },
+  },
+});
+```
+
+### Multi-Step Tool Calls
+
+```ts
+import { generateText, stepCountIs } from 'ai';
+
+const { text, steps } = await generateText({
+  model: requesty.chat('openai/gpt-4o'),
+  prompt: 'Research and summarize the latest AI developments',
+  tools: {
+    webSearch: searchTool,
+    summarize: summarizeTool,
+  },
+  stopWhen: stepCountIs(5), // Allow up to 5 tool call steps
+});
+
+console.log('Final result:', text);
+console.log('Steps taken:', steps.length);
+```
+
+### Type-Safe Tool Results
+
+```ts
+import { ToolCallUnion, ToolResultUnion } from 'ai';
+
+const myTools = {
+  getWeather: weatherTool,
+  getNews: newsTool,
+};
+
+type MyToolCall = ToolCallUnion<typeof myTools>;
+type MyToolResult = ToolResultUnion<typeof myTools>;
+
+// Use these types for type-safe tool handling
+```
+
+## Compatibility
+
+- **AI SDK v5**: Full support with all new features
+- **AI SDK v4**: Use `@requesty/ai-sdk@latest` for stable compatibility
+- **Node.js**: 18+ required
+- **TypeScript**: Full type safety included
+
+## Migration from AI SDK v4
+
+If you're upgrading from AI SDK v4:
+
+1. **Install beta versions**:
+   ```bash
+   npm install @requesty/ai-sdk@beta ai@beta
+   ```
+
+2. **Update imports** (AI SDK v5 uses different message types):
+   ```ts
+   // Old (v4)
+   const messages = [{ role: 'user', content: 'Hello' }];
+
+   // New (v5)
+   import { convertToModelMessages } from 'ai';
+   const messages = convertToModelMessages(uiMessages);
+   ```
+
+3. **Update streaming** (new protocol in v5):
+   ```ts
+   // Old (v4)
+   const stream = await streamText(/* ... */);
+
+   // New (v5)
+   const { textStream } = streamText(/* ... */);
+   for await (const delta of textStream) {
+     // handle delta
+   }
+   ```
+
+See the [AI SDK v5 migration guide](https://sdk.vercel.ai/docs/migration-guides) for complete details.
+
+## Examples
+
+### Customer Support Bot
+
+```ts
+const supportBot = async (userMessage: string, userId: string) => {
+  return await generateText({
+    model: requesty.chat('anthropic/claude-3.5-sonnet'),
+    prompt: `Customer: ${userMessage}`,
+    providerOptions: {
+      requesty: {
+        tags: ['customer-support'],
+        user_id: userId,
+        extra: {
+          department: 'support',
+          priority: 'normal',
+        },
+      },
+    },
+  });
+};
+```
+
+### Content Generation Pipeline
+
+```ts
+const generateBlogPost = async (topic: string) => {
+  const { text } = await generateText({
+    model: requesty.chat('openai/gpt-4o'),
+    prompt: `Write a blog post about: ${topic}`,
+    providerOptions: {
+      requesty: {
+        tags: ['content-generation', 'blog'],
+        trace_id: `blog_${Date.now()}`,
+        extra: {
+          content_type: 'blog_post',
+          topic: topic,
+        },
+      },
+    },
+  });
+
+  return text;
+};
+```
+
+### AI Agent with Tools
+
+```ts
+const researchAgent = async (query: string) => {
+  const { text, toolResults } = await generateText({
+    model: requesty.chat('openai/gpt-4o'),
+    prompt: `Research and analyze: ${query}`,
+    tools: {
+      webSearch: searchTool,
+      summarize: summarizeTool,
+      saveToDatabase: saveTool,
+    },
+    stopWhen: stepCountIs(10),
+    providerOptions: {
+      requesty: {
+        tags: ['research', 'agent'],
+        trace_id: `research_${Date.now()}`,
+      },
+    },
+  });
+
+  return { analysis: text, sources: toolResults };
+};
+```
+
+## Error Handling
+
+```ts
+import {
+  NoSuchToolError,
+  InvalidToolArgumentsError,
+  ToolExecutionError
+} from 'ai';
+
+try {
+  const result = await generateText({
+    model: requesty.chat('openai/gpt-4o'),
+    tools: { myTool },
+    prompt: 'Use the tool',
+  });
+} catch (error) {
+  if (NoSuchToolError.isInstance(error)) {
+    console.log('Tool not found');
+  } else if (InvalidToolArgumentsError.isInstance(error)) {
+    console.log('Invalid tool arguments');
+  } else if (ToolExecutionError.isInstance(error)) {
+    console.log('Tool execution failed');
+  }
+}
+```
+
+## Contributing
+
+We welcome contributions! Please see our [contributing guidelines](CONTRIBUTING.md) for details.
+
+## License
+
+Apache-2.0 - see [LICENSE](LICENSE) file for details.
+
+## Support
+
+- 📖 [Documentation](https://docs.requesty.ai/)
+- 💬 [Discord Community](https://discord.gg/requesty)
+- 📧 [Support Email](mailto:support@requesty.ai)
+- 🐛 [Report Issues](https://github.com/requestyai/ai-sdk-requesty/issues)
+
+---
+
+**Made with ❤️ by the [Requesty](https://requesty.ai) team**
