@@ -1,140 +1,113 @@
-import type { LanguageModelV1Prompt } from '@ai-sdk/provider';
+import type { LanguageModelV2Prompt } from '@ai-sdk/provider';
 
-import {
-  InvalidPromptError,
-  UnsupportedFunctionalityError,
-} from '@ai-sdk/provider';
+export function convertToRequestyCompletionPrompt(
+  prompt: LanguageModelV2Prompt,
+  options?: {
+    botStopSequence?: string;
+    userStopSequence?: string;
+  },
+): string {
+  const { botStopSequence = '</s>', userStopSequence = '' } = options ?? {};
 
-export function convertToRequestyCompletionPrompt({
-  prompt,
-  inputFormat,
-  user = 'user',
-  assistant = 'assistant',
-}: {
-  prompt: LanguageModelV1Prompt;
-  inputFormat: 'prompt' | 'messages';
-  user?: string;
-  assistant?: string;
-}): {
-  prompt: string;
-} {
-  // When the user supplied a prompt input, we don't transform it:
-  if (
-    inputFormat === 'prompt' &&
-    prompt.length === 1 &&
-    prompt[0] &&
-    prompt[0].role === 'user' &&
-    prompt[0].content.length === 1 &&
-    prompt[0].content[0] &&
-    prompt[0].content[0].type === 'text'
-  ) {
-    return { prompt: prompt[0].content[0].text };
-  }
-
-  // otherwise transform to a chat message format:
-  let text = '';
-
-  // if first message is a system message, add it to the text:
-  if (prompt[0] && prompt[0].role === 'system') {
-    text += `${prompt[0].content}\n\n`;
-    prompt = prompt.slice(1);
-  }
-
-  for (const { role, content } of prompt) {
-    switch (role) {
-      case 'system': {
-        throw new InvalidPromptError({
-          message: 'Unexpected system message in prompt: ${content}',
-          prompt,
-        });
+  return prompt
+    .map(({ role, content }) => {
+      if (role === 'system') {
+        return content;
       }
 
-      case 'user': {
-        const userMessage = content
+      if (role === 'user') {
+        const text = content
           .map((part) => {
             switch (part.type) {
-              case 'text': {
+              case 'text':
                 return part.text;
-              }
-              case 'image': {
-                throw new UnsupportedFunctionalityError({
-                  functionality: 'images',
-                });
-              }
-              case 'file': {
-                throw new UnsupportedFunctionalityError({
-                  functionality: 'file attachments',
-                });
-              }
+              case 'file':
+                if (part.data instanceof URL) {
+                  return part.data.toString();
+                } else if (part.data instanceof Uint8Array) {
+                  return '[Binary file]';
+                } else {
+                  return part.data;
+                }
               default: {
                 const _exhaustiveCheck: never = part;
                 throw new Error(
-                  `Unsupported content type: ${_exhaustiveCheck}`,
+                  `Unsupported user content part: ${_exhaustiveCheck}`,
                 );
               }
             }
           })
           .join('');
 
-        text += `${user}:\n${userMessage}\n\n`;
-        break;
+        return text + userStopSequence;
       }
 
-      case 'assistant': {
-        const assistantMessage = content
+      if (role === 'assistant') {
+        const text = content
           .map((part) => {
             switch (part.type) {
-              case 'text': {
+              case 'text':
                 return part.text;
-              }
-              case 'tool-call': {
-                throw new UnsupportedFunctionalityError({
-                  functionality: 'tool-call messages',
-                });
-              }
-              case 'reasoning': {
-                throw new UnsupportedFunctionalityError({
-                  functionality: 'reasoning messages',
-                });
-              }
-
-              case 'redacted-reasoning': {
-                throw new UnsupportedFunctionalityError({
-                  functionality: 'redacted reasoning messages',
-                });
-              }
-
+              case 'reasoning':
+                return part.text;
+              case 'tool-call':
+                return `Function call: ${part.toolName}(${JSON.stringify(part.input)})`;
+              case 'file':
+                return '[File]';
+              case 'tool-result':
+                return `Function result: ${JSON.stringify(part.output)}`;
               default: {
                 const _exhaustiveCheck: never = part;
                 throw new Error(
-                  `Unsupported content type: ${_exhaustiveCheck}`,
+                  `Unsupported assistant content part: ${_exhaustiveCheck}`,
                 );
               }
             }
           })
           .join('');
 
-        text += `${assistant}:\n${assistantMessage}\n\n`;
-        break;
+        return text + botStopSequence;
       }
 
-      case 'tool': {
-        throw new UnsupportedFunctionalityError({
-          functionality: 'tool messages',
-        });
+      if (role === 'tool') {
+        const text = content
+          .map((part) => {
+            if (part.type === 'tool-result') {
+              if (part.output.type === 'text') {
+                return part.output.value;
+              } else if (part.output.type === 'json') {
+                return JSON.stringify(part.output.value);
+              } else if (part.output.type === 'error-text') {
+                return `Error: ${part.output.value}`;
+              } else if (part.output.type === 'error-json') {
+                return `Error: ${JSON.stringify(part.output.value)}`;
+              } else if (part.output.type === 'content') {
+                return part.output.value
+                  .map((contentPart) => {
+                    if (contentPart.type === 'text') {
+                      return contentPart.text;
+                    } else if (contentPart.type === 'media') {
+                      return `[Media: ${contentPart.mediaType}]`;
+                    }
+                    return '';
+                  })
+                  .join('\n');
+              } else {
+                const _exhaustiveCheck: never = part.output;
+                throw new Error(
+                  `Unsupported tool result output: ${_exhaustiveCheck}`,
+                );
+              }
+            }
+            return '';
+          })
+          .join('');
+
+        return text;
       }
 
-      default: {
-        const _exhaustiveCheck: never = role;
-        throw new Error(`Unsupported role: ${_exhaustiveCheck}`);
-      }
-    }
-  }
-
-  // Assistant message prefix:
-  text += `${assistant}:\n`;
-
-  return {
-    prompt: text,
-  };
+      const _exhaustiveCheck: never = role;
+      throw new Error(`Unsupported message role: ${_exhaustiveCheck}`);
+    })
+    .join('');
 }

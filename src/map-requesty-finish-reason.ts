@@ -1,18 +1,19 @@
-import type { LanguageModelV1FinishReason } from '@ai-sdk/provider';
+import type { LanguageModelV2FinishReason } from '@ai-sdk/provider';
 
 export function mapRequestyFinishReason(
   finishReason: string | null | undefined,
-): LanguageModelV1FinishReason {
+): LanguageModelV2FinishReason {
   switch (finishReason) {
     case 'stop':
       return 'stop';
     case 'length':
+    case 'max_tokens':
       return 'length';
+    case 'tool_calls':
+    case 'function_call':
+      return 'tool-calls';
     case 'content_filter':
       return 'content-filter';
-    case 'function_call':
-    case 'tool_calls':
-      return 'tool-calls';
     default:
       return 'unknown';
   }

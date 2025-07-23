@@ -1,179 +1,203 @@
+import type { LanguageModelV2Prompt } from '@ai-sdk/provider';
 import type {
-  LanguageModelV2Prompt,
-  SharedV2ProviderMetadata,
-} from '@ai-sdk/provider';
-import type {
-  ChatCompletionContentPart,
+  RequestyChatMessage,
   RequestyChatPrompt,
-} from './requesty-chat-prompt';
-
-import { convertUint8ArrayToBase64 } from '@ai-sdk/provider-utils';
-
-// Type for Requesty Cache Control following Anthropic's pattern
-export type RequestyCacheControl = { type: 'ephemeral' };
-
-function getCacheControl(
-  providerMetadata: SharedV2ProviderMetadata | undefined,
-): RequestyCacheControl | undefined {
-  const anthropic = providerMetadata?.anthropic;
-  const requesty = providerMetadata?.requesty;
-
-  // Allow both cacheControl and cache_control:
-  return (requesty?.cacheControl ??
-    requesty?.cache_control ??
-    anthropic?.cacheControl ??
-    anthropic?.cache_control) as RequestyCacheControl | undefined;
-}
+  RequestyImagePart,
+  RequestyTextPart,
+  RequestyToolCall,
+} from './types';
 
 export function convertToRequestyChatMessages(
   prompt: LanguageModelV2Prompt,
 ): RequestyChatPrompt {
   const messages: RequestyChatPrompt = [];
 
-  for (const { role, content, providerMetadata } of prompt) {
+  for (const message of prompt) {
+    const role = message.role;
+
     switch (role) {
       case 'system': {
         messages.push({
           role: 'system',
-          content,
-          cache_control: getCacheControl(providerMetadata),
+          content: message.content,
         });
         break;
       }
 
       case 'user': {
-        if (content.length === 1 && content[0]?.type === 'text') {
-          messages.push({
-            role: 'user',
-            content: content[0].text,
-            cache_control:
-              getCacheControl(providerMetadata) ??
-              getCacheControl(content[0].providerMetadata),
-          });
-          break;
-        }
-
-        // Get message level cache control
-        const messageCacheControl = getCacheControl(providerMetadata);
-        const contentParts: ChatCompletionContentPart[] = content.map(
-          (part) => {
-            switch (part.type) {
-              case 'text':
-                return {
-                  type: 'text' as const,
-                  text: part.text,
-                  // For text parts, only use part-specific cache control
-                  cache_control:
-                    getCacheControl(part.providerMetadata) ??
-                    messageCacheControl,
-                };
-              case 'image':
-                return {
-                  type: 'image_url' as const,
-                  image_url: {
-                    url:
-                      part.image instanceof URL
-                        ? part.image.toString()
-                        : `data:${part.mimeType ?? 'image/jpeg'};base64,${convertUint8ArrayToBase64(
-                            part.image,
-                          )}`,
-                  },
-                  // For image parts, use part-specific or message-level cache control
-                  cache_control:
-                    getCacheControl(part.providerMetadata) ??
-                    messageCacheControl,
-                };
-              case 'file':
-                return {
-                  type: 'text' as const,
-                  text:
-                    part.data instanceof URL ? part.data.toString() : part.data,
-                  cache_control:
-                    getCacheControl(part.providerMetadata) ??
-                    messageCacheControl,
-                };
-              default: {
-                const _exhaustiveCheck: never = part;
-                throw new Error(
-                  `Unsupported content part type: ${_exhaustiveCheck}`,
-                );
-              }
-            }
-          },
-        );
-
-        // For multi-part messages, don't add cache_control at the root level
-        messages.push({
-          role: 'user',
-          content: contentParts,
-        });
-
-        break;
-      }
-
-      case 'assistant': {
         let text = '';
-        const toolCalls: Array<{
-          id: string;
-          type: 'function';
-          function: { name: string; arguments: string };
-        }> = [];
+        let images: RequestyImagePart[] = [];
 
-        for (const part of content) {
+        for (const part of message.content) {
           switch (part.type) {
             case 'text': {
               text += part.text;
               break;
             }
+
+            case 'file': {
+              if (part.mediaType.startsWith('image/')) {
+                let data: string;
+                if (part.data instanceof URL) {
+                  data = part.data.toString();
+                } else if (part.data instanceof Uint8Array) {
+                  // Convert Uint8Array to base64
+                  const base64String = Buffer.from(part.data).toString(
+                    'base64',
+                  );
+                  data = `data:${part.mediaType};base64,${base64String}`;
+                } else {
+                  // Assume it's already a base64 string or URL
+                  data = part.data;
+                }
+
+                images.push({
+                  type: 'image_url',
+                  image_url: { url: data },
+                });
+              }
+              break;
+            }
+
+            default: {
+              const _exhaustiveCheck: never = part;
+              throw new Error(
+                `Unsupported user message part: ${_exhaustiveCheck}`,
+              );
+            }
+          }
+        }
+
+        if (images.length > 0) {
+          const content: Array<RequestyTextPart | RequestyImagePart> = [];
+          if (text) {
+            content.push({ type: 'text', text });
+          }
+          content.push(...images);
+
+          messages.push({
+            role: 'user',
+            content,
+          });
+        } else {
+          messages.push({
+            role: 'user',
+            content: text,
+          });
+        }
+        break;
+      }
+
+      case 'assistant': {
+        let text = '';
+        let reasoning = '';
+        const toolCalls: RequestyToolCall[] = [];
+
+        for (const part of message.content) {
+          switch (part.type) {
+            case 'text': {
+              text += part.text;
+              break;
+            }
+
+            case 'reasoning': {
+              reasoning += part.text;
+              break;
+            }
+
             case 'tool-call': {
               toolCalls.push({
                 id: part.toolCallId,
                 type: 'function',
                 function: {
                   name: part.toolName,
-                  arguments: JSON.stringify(part.args),
+                  arguments: JSON.stringify(part.input),
                 },
               });
               break;
             }
-            // TODO: Handle reasoning and redacted-reasoning
-            case 'reasoning':
-            case 'redacted-reasoning':
+
+            case 'file': {
+              // Skip files in assistant messages for now
               break;
+            }
+
+            case 'tool-result': {
+              // Skip tool results in assistant messages as they should be in separate tool messages
+              break;
+            }
+
             default: {
               const _exhaustiveCheck: never = part;
-              throw new Error(`Unsupported part: ${_exhaustiveCheck}`);
+              throw new Error(
+                `Unsupported assistant message part: ${_exhaustiveCheck}`,
+              );
             }
           }
         }
 
-        messages.push({
+        const assistantMessage: RequestyChatMessage = {
           role: 'assistant',
-          content: !text && toolCalls.length > 0 ? undefined : text,
-          tool_calls: toolCalls.length > 0 ? toolCalls : undefined,
-          cache_control: getCacheControl(providerMetadata),
-        });
+          content: text || null,
+        };
 
+        if (reasoning) {
+          assistantMessage.reasoning = reasoning;
+        }
+
+        if (toolCalls.length > 0) {
+          assistantMessage.tool_calls = toolCalls;
+        }
+
+        messages.push(assistantMessage);
         break;
       }
 
       case 'tool': {
-        for (const toolResponse of content) {
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolResponse.toolCallId,
-            content: JSON.stringify(toolResponse.result),
-            cache_control:
-              getCacheControl(providerMetadata) ??
-              getCacheControl(toolResponse.providerMetadata),
-          });
+        for (const part of message.content) {
+          if (part.type === 'tool-result') {
+            let content: string;
+
+            if (part.output.type === 'text') {
+              content = part.output.value;
+            } else if (part.output.type === 'json') {
+              content = JSON.stringify(part.output.value);
+            } else if (part.output.type === 'error-text') {
+              content = `Error: ${part.output.value}`;
+            } else if (part.output.type === 'error-json') {
+              content = `Error: ${JSON.stringify(part.output.value)}`;
+            } else if (part.output.type === 'content') {
+              // Combine all content parts into a single string
+              content = part.output.value
+                .map((contentPart) => {
+                  if (contentPart.type === 'text') {
+                    return contentPart.text;
+                  } else if (contentPart.type === 'media') {
+                    return `[Media: ${contentPart.mediaType}]`;
+                  }
+                  return '';
+                })
+                .join('\n');
+            } else {
+              const _exhaustiveCheck: never = part.output;
+              throw new Error(
+                `Unsupported tool result output type: ${_exhaustiveCheck}`,
+              );
+            }
+
+            messages.push({
+              role: 'tool',
+              tool_call_id: part.toolCallId,
+              content,
+            });
+          }
         }
         break;
       }
 
       default: {
         const _exhaustiveCheck: never = role;
-        throw new Error(`Unsupported role: ${_exhaustiveCheck}`);
+        throw new Error(`Unsupported message role: ${_exhaustiveCheck}`);
       }
     }
   }

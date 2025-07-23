@@ -1,9 +1,9 @@
-import type { LanguageModelV1 } from '@ai-sdk/provider';
+import type { LanguageModelV2 } from '@ai-sdk/provider';
 
 /**
  * Language models from Requesty
  */
-export type RequestyLanguageModel = LanguageModelV1;
+export type RequestyLanguageModel = LanguageModelV2;
 
 export type RequestyProviderOptions = {
   /**
@@ -45,7 +45,38 @@ export type RequestyUsage = {
 };
 
 export type RequestyProviderMetadata = {
-  requesty: {
+  requesty?: {
     usage?: RequestyUsage;
   };
 };
+
+export interface RequestyChatMessage {
+  role: 'system' | 'user' | 'assistant' | 'tool';
+  content: string | null | Array<RequestyTextPart | RequestyImagePart>;
+  tool_call_id?: string;
+  tool_calls?: RequestyToolCall[];
+  reasoning?: string;
+}
+
+export type RequestyChatPrompt = RequestyChatMessage[];
+
+export interface RequestyTextPart {
+  type: 'text';
+  text: string;
+}
+
+export interface RequestyImagePart {
+  type: 'image_url';
+  image_url: {
+    url: string;
+  };
+}
+
+export interface RequestyToolCall {
+  id: string;
+  type: 'function';
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
