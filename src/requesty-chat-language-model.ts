@@ -37,12 +37,6 @@ import { convertToRequestyChatMessages } from './convert-to-requesty-chat-messag
 import { mapRequestyFinishReason } from './map-requesty-finish-reason';
 import { requestyFailedResponseHandler } from './requesty-error';
 
-function isFunctionTool(
-  tool: LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool,
-): tool is LanguageModelV2FunctionTool {
-  return 'parameters' in tool;
-}
-
 type RequestyChatConfig = {
   provider: string;
   compatibility: 'strict' | 'compatible';
@@ -87,7 +81,14 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     toolChoice,
     providerOptions,
   }: LanguageModelV2CallOptions) {
-    const extraCallingBody = providerOptions?.['requesty'] ?? {};
+    // Extract requesty metadata from providerOptions and put it at root level
+    const requestyMetadata = providerOptions?.['requesty'] ?? {};
+    const extraCallingBody: Record<string, any> = {};
+
+    // If there's requesty metadata, add it as a root-level 'requesty' field
+    if (Object.keys(requestyMetadata).length > 0) {
+      extraCallingBody.requesty = requestyMetadata;
+    }
 
     const baseArgs = {
       // model id:
@@ -234,9 +235,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
           type: 'tool-call',
           toolCallId: toolCall.id ?? generateId(),
           toolName: toolCall.function.name,
-          input: isParsableJson(toolCall.function.arguments)
-            ? JSON.parse(toolCall.function.arguments)
-            : toolCall.function.arguments,
+          input: toolCall.function.arguments, // Keep as string - AI SDK will parse it
         });
       }
     }
@@ -456,9 +455,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                       type: 'tool-call',
                       toolCallId: toolCall.id,
                       toolName: toolCall.function.name,
-                      input: isParsableJson(toolCall.function.arguments)
-                        ? JSON.parse(toolCall.function.arguments)
-                        : toolCall.function.arguments,
+                      input: toolCall.function.arguments, // Keep as string
                     });
 
                     toolCall.sent = true;
@@ -496,9 +493,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     type: 'tool-call',
                     toolCallId: toolCall.id,
                     toolName: toolCall.function.name,
-                    input: isParsableJson(toolCall.function.arguments)
-                      ? JSON.parse(toolCall.function.arguments)
-                      : toolCall.function.arguments,
+                    input: toolCall.function.arguments,
                   });
 
                   toolCall.sent = true;
@@ -516,9 +511,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     type: 'tool-call',
                     toolCallId: toolCall.id,
                     toolName: toolCall.function.name,
-                    input: isParsableJson(toolCall.function.arguments)
-                      ? JSON.parse(toolCall.function.arguments)
-                      : '{}',
+                    input: toolCall.function.arguments || '{}',
                   });
                   toolCall.sent = true;
                 }
@@ -561,7 +554,7 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
     z.object({
       message: z.object({
         role: z.string(),
-        content: z.string().nullable(),
+        content: z.string().nullable().optional(),
         reasoning: z.string().optional(),
         tool_calls: z
           .array(
@@ -660,9 +653,9 @@ function prepareToolsAndToolChoice({
   }
 
   const mappedTools = validTools.map((tool) => {
-    if (!isFunctionTool(tool)) {
+    if (tool.type !== 'function') {
       throw new UnsupportedFunctionalityError({
-        functionality: 'Provider defined tools',
+        functionality: `${tool.type} tools`,
       });
     }
 
