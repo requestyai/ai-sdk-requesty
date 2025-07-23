@@ -1,13 +1,17 @@
-import type { RequestyProviderMetadata, RequestyUsage } from '@/src/types';
+import type { RequestyUsage } from '@/src/types';
 import type {
   LanguageModelV2,
   LanguageModelV2CallOptions,
   LanguageModelV2CallWarning,
+  LanguageModelV2Content,
   LanguageModelV2FinishReason,
   LanguageModelV2FunctionTool,
-  LanguageModelV2LogProbs,
   LanguageModelV2ProviderDefinedTool,
+  LanguageModelV2ResponseMetadata,
   LanguageModelV2StreamPart,
+  LanguageModelV2Usage,
+  SharedV2Headers,
+  SharedV2ProviderMetadata,
 } from '@ai-sdk/provider';
 import type { ParseResult } from '@ai-sdk/provider-utils';
 import type {
@@ -30,12 +34,8 @@ import {
 import { z } from 'zod';
 
 import { convertToRequestyChatMessages } from './convert-to-requesty-chat-messages';
-import { mapRequestyChatLogProbsOutput } from './map-requesty-chat-logprobs';
 import { mapRequestyFinishReason } from './map-requesty-finish-reason';
-import {
-  RequestyErrorResponseSchema,
-  requestyFailedResponseHandler,
-} from './requesty-error';
+import { requestyFailedResponseHandler } from './requesty-error';
 
 function isFunctionTool(
   tool: LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool,
@@ -54,12 +54,11 @@ type RequestyChatConfig = {
 
 export class RequestyChatLanguageModel implements LanguageModelV2 {
   readonly specificationVersion = 'v2';
-  readonly defaultObjectGenerationMode = 'tool';
+  readonly provider: string;
+  readonly modelId: RequestyChatModelId;
   readonly supportedUrls = {};
 
-  readonly modelId: RequestyChatModelId;
   readonly settings: RequestyChatSettings;
-
   private readonly config: RequestyChatConfig;
 
   constructor(
@@ -70,16 +69,12 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     this.modelId = modelId;
     this.settings = settings;
     this.config = config;
-  }
-
-  get provider(): string {
-    return this.config.provider;
+    this.provider = config.provider;
   }
 
   private getArgs({
-    mode,
     prompt,
-    maxTokens,
+    maxOutputTokens,
     temperature,
     topP,
     frequencyPenalty,
@@ -88,10 +83,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     stopSequences,
     responseFormat,
     topK,
-    providerMetadata,
+    tools,
+    toolChoice,
+    providerOptions,
   }: LanguageModelV2CallOptions) {
-    const type = mode.type;
-    const extraCallingBody = providerMetadata?.['requesty'] ?? {};
+    const extraCallingBody = providerOptions?.['requesty'] ?? {};
 
     const baseArgs = {
       // model id:
@@ -117,7 +113,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
       parallel_tool_calls: this.settings.parallelToolCalls,
 
       // standardized settings:
-      max_tokens: maxTokens,
+      max_tokens: maxOutputTokens,
       temperature,
       top_p: topP,
       frequency_penalty: frequencyPenalty,
@@ -129,7 +125,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
       top_k: topK,
 
       // messages:
-      messages: convertToRequestyChatMessages(prompt, providerMetadata),
+      messages: convertToRequestyChatMessages(prompt),
 
       // Requesty specific settings:
       include_reasoning: this.settings.includeReasoning,
@@ -141,71 +137,39 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
       ...extraCallingBody,
     };
 
-    switch (type) {
-      case 'regular': {
-        return { ...baseArgs, ...prepareToolsAndToolChoice(mode) };
-      }
-
-      case 'object-json': {
-        return {
-          ...baseArgs,
-          response_format: { type: 'json_object' },
-        };
-      }
-
-      case 'object-tool': {
-        return {
-          ...baseArgs,
-          tool_choice: { type: 'function', function: { name: mode.tool.name } },
-          tools: [
-            {
-              type: 'function',
-              function: {
-                name: mode.tool.name,
-                description: mode.tool.description,
-                parameters: mode.tool.parameters,
-              },
-            },
-          ],
-        };
-      }
-
-      // Handle all non-text types with a single default case
-      default: {
-        const _exhaustiveCheck: never = type;
-        throw new UnsupportedFunctionalityError({
-          functionality: `${_exhaustiveCheck} mode`,
-        });
-      }
+    // Handle tools and tool choice
+    if (tools && tools.length > 0) {
+      const { tools: mappedTools, tool_choice } = prepareToolsAndToolChoice({
+        tools,
+        toolChoice,
+      });
+      return { ...baseArgs, tools: mappedTools, tool_choice };
     }
+
+    // Handle response format for object generation
+    if (responseFormat?.type === 'json') {
+      return {
+        ...baseArgs,
+        response_format: { type: 'json_object' },
+      };
+    }
+
+    return baseArgs;
   }
 
   async doGenerate(options: LanguageModelV2CallOptions): Promise<{
-    response: {
-      id: string;
-      modelId: string;
-    };
-    contentParts: Array<
-      | { type: 'text'; text: string }
-      | { type: 'reasoning'; text: string }
-      | {
-          type: 'tool-call';
-          toolCallType: 'function';
-          toolCallId: string;
-          toolName: string;
-          args: unknown;
-        }
-    >;
+    content: Array<LanguageModelV2Content>;
     finishReason: LanguageModelV2FinishReason;
-    usage: {
-      promptTokens: number;
-      completionTokens: number;
+    usage: LanguageModelV2Usage;
+    providerMetadata?: SharedV2ProviderMetadata;
+    request?: {
+      body?: unknown;
     };
-    logprobs?: LanguageModelV2LogProbs;
-    rawCall: { rawPrompt: unknown; rawSettings: unknown };
-    rawResponse?: { headers?: Record<string, string> };
-    warnings?: LanguageModelV2CallWarning[];
-    providerMetadata?: RequestyProviderMetadata;
+    response?: LanguageModelV2ResponseMetadata & {
+      headers?: SharedV2Headers;
+      body?: unknown;
+    };
+    warnings: Array<LanguageModelV2CallWarning>;
   }> {
     const args = this.getArgs(options);
 
@@ -241,25 +205,15 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 response.usage.prompt_tokens_details.cached_tokens ?? 0,
             },
           },
-        } satisfies RequestyProviderMetadata)
+        } satisfies SharedV2ProviderMetadata)
       : undefined;
 
-    // Convert to content parts format
-    const contentParts: Array<
-      | { type: 'text'; text: string }
-      | { type: 'reasoning'; text: string }
-      | {
-          type: 'tool-call';
-          toolCallType: 'function';
-          toolCallId: string;
-          toolName: string;
-          args: unknown;
-        }
-    > = [];
+    // Convert to content format
+    const content: Array<LanguageModelV2Content> = [];
 
     // Add text content
     if (choice.message.content) {
-      contentParts.push({
+      content.push({
         type: 'text',
         text: choice.message.content,
       });
@@ -267,7 +221,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
     // Add reasoning content if present
     if (choice.message.reasoning) {
-      contentParts.push({
+      content.push({
         type: 'reasoning',
         text: choice.message.reasoning,
       });
@@ -276,12 +230,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     // Add tool calls
     if (choice.message.tool_calls) {
       for (const toolCall of choice.message.tool_calls) {
-        contentParts.push({
+        content.push({
           type: 'tool-call',
-          toolCallType: 'function',
-          toolCallId: toolCall.id,
+          id: toolCall.id ?? generateId(),
           toolName: toolCall.function.name,
-          args: isParsableJson(toolCall.function.arguments)
+          arguments: isParsableJson(toolCall.function.arguments)
             ? JSON.parse(toolCall.function.arguments)
             : toolCall.function.arguments,
         });
@@ -289,27 +242,34 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     }
 
     return {
-      response: {
-        id: response.id,
-        modelId: response.model,
-      },
-      contentParts,
+      content,
       finishReason: mapRequestyFinishReason(choice.finish_reason),
       usage: {
-        promptTokens: response.usage?.prompt_tokens ?? 0,
-        completionTokens: response.usage?.completion_tokens ?? 0,
+        inputTokens: response.usage?.prompt_tokens ?? 0,
+        outputTokens: response.usage?.completion_tokens ?? 0,
+        totalTokens: response.usage?.total_tokens ?? 0,
       },
-      logprobs: mapRequestyChatLogProbsOutput(choice.logprobs),
-      rawCall: { rawPrompt, rawSettings },
-      rawResponse: { headers: responseHeaders },
-      warnings: [],
       ...(providerMetadata ? { providerMetadata } : {}),
+      request: { body: rawSettings },
+      response: {
+        id: response.id ?? '',
+        modelId: response.model ?? '',
+        headers: responseHeaders,
+        body: response,
+      },
+      warnings: [],
     };
   }
 
-  async doStream(
-    options: Parameters<LanguageModelV2['doStream']>[0],
-  ): Promise<Awaited<ReturnType<LanguageModelV2['doStream']>>> {
+  async doStream(options: LanguageModelV2CallOptions): Promise<{
+    stream: ReadableStream<LanguageModelV2StreamPart>;
+    request?: {
+      body?: unknown;
+    };
+    response?: {
+      headers?: SharedV2Headers;
+    };
+  }> {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
@@ -345,16 +305,15 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         name: string;
         arguments: string;
       };
-
       sent: boolean;
     }> = [];
 
     let finishReason: LanguageModelV2FinishReason = 'other';
-    let usage: { promptTokens: number; completionTokens: number } = {
-      promptTokens: Number.NaN,
-      completionTokens: Number.NaN,
+    let usage: LanguageModelV2Usage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
     };
-    let logprobs: LanguageModelV2LogProbs;
 
     const requestyUsage: Partial<RequestyUsage> = {};
 
@@ -397,8 +356,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
             if (value.usage != null) {
               usage = {
-                promptTokens: value.usage.prompt_tokens,
-                completionTokens: value.usage.completion_tokens,
+                inputTokens: value.usage.prompt_tokens ?? 0,
+                outputTokens: value.usage.completion_tokens ?? 0,
+                totalTokens: value.usage.total_tokens ?? 0,
               };
 
               requestyUsage.cachingTokens =
@@ -422,23 +382,17 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             if (delta.content != null) {
               controller.enqueue({
                 type: 'text-delta',
-                textDelta: delta.content,
+                id: generateId(),
+                delta: delta.content,
               });
             }
 
             if (delta.reasoning != null) {
               controller.enqueue({
-                type: 'reasoning',
-                textDelta: delta.reasoning,
+                type: 'reasoning-delta',
+                id: generateId(),
+                delta: delta.reasoning,
               });
-            }
-
-            const mappedLogprobs = mapRequestyChatLogProbsOutput(
-              choice?.logprobs,
-            );
-            if (mappedLogprobs?.length) {
-              if (logprobs === undefined) logprobs = [];
-              logprobs.push(...mappedLogprobs);
             }
 
             if (delta.tool_calls != null) {
@@ -492,20 +446,17 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                   ) {
                     // send delta
                     controller.enqueue({
-                      type: 'tool-call-delta',
-                      toolCallType: 'function',
-                      toolCallId: toolCall.id,
-                      toolName: toolCall.function.name,
-                      argsTextDelta: toolCall.function.arguments,
+                      type: 'tool-input-delta',
+                      id: toolCall.id,
+                      delta: toolCall.function.arguments,
                     });
 
                     // send tool call
                     controller.enqueue({
                       type: 'tool-call',
-                      toolCallType: 'function',
-                      toolCallId: toolCall.id ?? generateId(),
+                      id: toolCall.id,
                       toolName: toolCall.function.name,
-                      args: toolCall.function.arguments,
+                      arguments: toolCall.function.arguments,
                     });
 
                     toolCall.sent = true;
@@ -528,11 +479,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
                 // send delta
                 controller.enqueue({
-                  type: 'tool-call-delta',
-                  toolCallType: 'function',
-                  toolCallId: toolCall.id,
-                  toolName: toolCall.function.name,
-                  argsTextDelta: toolCallDelta.function.arguments ?? '',
+                  type: 'tool-input-delta',
+                  id: toolCall.id,
+                  delta: toolCallDelta.function.arguments ?? '',
                 });
 
                 // check if tool call is complete
@@ -543,10 +492,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 ) {
                   controller.enqueue({
                     type: 'tool-call',
-                    toolCallType: 'function',
-                    toolCallId: toolCall.id ?? generateId(),
+                    id: toolCall.id,
                     toolName: toolCall.function.name,
-                    args: toolCall.function.arguments,
+                    arguments: toolCall.function.arguments,
                   });
 
                   toolCall.sent = true;
@@ -562,11 +510,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 if (!toolCall.sent) {
                   controller.enqueue({
                     type: 'tool-call',
-                    toolCallType: 'function',
-                    toolCallId: toolCall.id ?? generateId(),
+                    id: toolCall.id,
                     toolName: toolCall.function.name,
-                    // Coerce invalid arguments to an empty JSON object
-                    args: isParsableJson(toolCall.function.arguments)
+                    arguments: isParsableJson(toolCall.function.arguments)
                       ? toolCall.function.arguments
                       : '{}',
                   });
@@ -576,7 +522,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             }
 
             // Prepare provider metadata with Requesty usage information
-            const providerMetadata: RequestyProviderMetadata = {
+            const providerMetadata: SharedV2ProviderMetadata = {
               requesty: {
                 usage:
                   requestyUsage.cachedTokens !== undefined &&
@@ -588,31 +534,53 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
             const hasProviderMetadata =
               providerMetadata.requesty.usage !== undefined;
+
             controller.enqueue({
               type: 'finish',
               finishReason,
-              logprobs,
               usage,
               ...(hasProviderMetadata ? { providerMetadata } : {}),
             });
           },
         }),
       ),
-      rawCall: { rawPrompt, rawSettings },
-      rawResponse: { headers: responseHeaders },
-      warnings: [],
+      request: { body: rawSettings },
+      response: { headers: responseHeaders },
     };
   }
 }
 
-const RequestyChatCompletionBaseResponseSchema = z.object({
+const RequestyNonStreamChatCompletionResponseSchema = z.object({
   id: z.string().optional(),
   model: z.string().optional(),
+  choices: z.array(
+    z.object({
+      message: z.object({
+        role: z.string(),
+        content: z.string().nullable(),
+        reasoning: z.string().optional(),
+        tool_calls: z
+          .array(
+            z.object({
+              id: z.string().nullable(),
+              type: z.string(),
+              function: z.object({
+                name: z.string(),
+                arguments: z.string(),
+              }),
+            }),
+          )
+          .optional(),
+      }),
+      finish_reason: z.string().nullable(),
+      logprobs: z.any().optional(),
+    }),
+  ),
   usage: z
     .object({
-      prompt_tokens: z.number(),
-      completion_tokens: z.number(),
-      total_tokens: z.number(),
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+      total_tokens: z.number().optional(),
       prompt_tokens_details: z
         .object({
           caching_tokens: z.number().optional(),
@@ -620,142 +588,89 @@ const RequestyChatCompletionBaseResponseSchema = z.object({
         })
         .optional(),
     })
-    .nullish(),
+    .optional(),
 });
 
-// limited version of the schema, focussed on what is needed for the implementation
-// this approach limits breakages when the API changes and increases efficiency
-const RequestyNonStreamChatCompletionResponseSchema =
-  RequestyChatCompletionBaseResponseSchema.extend({
-    choices: z.array(
-      z.object({
-        message: z.object({
-          role: z.literal('assistant'),
-          content: z.string().nullable().optional(),
-          reasoning: z.string().nullable().optional(),
-          tool_calls: z
-            .array(
-              z.object({
-                id: z.string().optional().nullable(),
-                type: z.literal('function'),
-                function: z.object({
-                  name: z.string(),
-                  arguments: z.string(),
-                }),
-              }),
-            )
-            .optional(),
-        }),
-        index: z.number(),
-        logprobs: z
-          .object({
-            content: z
-              .array(
-                z.object({
-                  token: z.string(),
-                  logprob: z.number(),
-                  top_logprobs: z.array(
-                    z.object({
-                      token: z.string(),
-                      logprob: z.number(),
-                    }),
-                  ),
-                }),
-              )
-              .nullable(),
-          })
-          .nullable()
-          .optional(),
-        finish_reason: z.string().optional().nullable(),
-      }),
-    ),
-  });
-
-// limited version of the schema, focussed on what is needed for the implementation
-// this approach limits breakages when the API changes and increases efficiency
-const RequestyStreamChatCompletionChunkSchema = z.union([
-  RequestyChatCompletionBaseResponseSchema.extend({
-    choices: z.array(
+const RequestyStreamChatCompletionChunkSchema = z.object({
+  id: z.string().optional(),
+  model: z.string().optional(),
+  choices: z
+    .array(
       z.object({
         delta: z
           .object({
-            role: z.enum(['assistant']).optional(),
-            content: z.string().nullish(),
-            reasoning: z.string().nullish().optional(),
+            content: z.string().nullable().optional(),
+            reasoning: z.string().nullable().optional(),
             tool_calls: z
               .array(
                 z.object({
                   index: z.number(),
-                  id: z.string().nullish(),
-                  type: z.literal('function').optional(),
-                  function: z.object({
-                    name: z.string().nullish(),
-                    arguments: z.string().nullish(),
-                  }),
+                  id: z.string().optional(),
+                  type: z.string().optional(),
+                  function: z
+                    .object({
+                      name: z.string().optional(),
+                      arguments: z.string().optional(),
+                    })
+                    .optional(),
                 }),
               )
-              .nullish(),
+              .optional(),
           })
-          .nullish(),
-        logprobs: z
-          .object({
-            content: z
-              .array(
-                z.object({
-                  token: z.string(),
-                  logprob: z.number(),
-                  top_logprobs: z.array(
-                    z.object({
-                      token: z.string(),
-                      logprob: z.number(),
-                    }),
-                  ),
-                }),
-              )
-              .nullable(),
-          })
-          .nullish(),
+          .optional(),
         finish_reason: z.string().nullable().optional(),
-        index: z.number(),
+        logprobs: z.any().optional(),
       }),
-    ),
-  }),
-  RequestyErrorResponseSchema,
-]);
+    )
+    .optional(),
+  usage: z
+    .object({
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+      total_tokens: z.number().optional(),
+      prompt_tokens_details: z
+        .object({
+          caching_tokens: z.number().optional(),
+          cached_tokens: z.number().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  error: z.any().optional(),
+});
 
-function prepareToolsAndToolChoice(
-  mode: Parameters<LanguageModelV2['doGenerate']>[0]['mode'] & {
-    type: 'regular';
-  },
-) {
+function prepareToolsAndToolChoice({
+  tools,
+  toolChoice,
+}: {
+  tools?: Array<
+    LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool
+  >;
+  toolChoice?: LanguageModelV2CallOptions['toolChoice'];
+}) {
   // when the tools array is empty, change it to undefined to prevent errors:
-  const tools = mode.tools?.length ? mode.tools : undefined;
+  const validTools = tools?.length ? tools : undefined;
 
-  if (tools == null) {
+  if (validTools == null) {
     return { tools: undefined, tool_choice: undefined };
   }
 
-  const mappedTools = tools.map((tool) => {
-    if (isFunctionTool(tool)) {
-      return {
-        type: 'function' as const,
-        function: {
-          name: tool.name,
-          description: tool.description,
-          parameters: tool.parameters,
-        },
-      };
-    } else {
-      return {
-        type: 'function' as const,
-        function: {
-          name: tool.name,
-        },
-      };
+  const mappedTools = validTools.map((tool) => {
+    if (!isFunctionTool(tool)) {
+      throw new UnsupportedFunctionalityError({
+        functionality: 'Provider defined tools',
+      });
     }
-  });
 
-  const toolChoice = mode.toolChoice;
+    return {
+      type: 'function',
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+      },
+    };
+  });
 
   if (toolChoice == null) {
     return { tools: mappedTools, tool_choice: undefined };
