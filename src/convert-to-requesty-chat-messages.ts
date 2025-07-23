@@ -1,6 +1,6 @@
 import type {
-  LanguageModelV1Prompt,
-  LanguageModelV1ProviderMetadata,
+  LanguageModelV2Prompt,
+  SharedV2ProviderMetadata,
 } from '@ai-sdk/provider';
 import type {
   ChatCompletionContentPart,
@@ -13,7 +13,7 @@ import { convertUint8ArrayToBase64 } from '@ai-sdk/provider-utils';
 export type RequestyCacheControl = { type: 'ephemeral' };
 
 function getCacheControl(
-  providerMetadata: LanguageModelV1ProviderMetadata | undefined,
+  providerMetadata: SharedV2ProviderMetadata | undefined,
 ): RequestyCacheControl | undefined {
   const anthropic = providerMetadata?.anthropic;
   const requesty = providerMetadata?.requesty;
@@ -26,7 +26,7 @@ function getCacheControl(
 }
 
 export function convertToRequestyChatMessages(
-  prompt: LanguageModelV1Prompt,
+  prompt: LanguageModelV2Prompt,
 ): RequestyChatPrompt {
   const messages: RequestyChatPrompt = [];
 

@@ -367,7 +367,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 value.usage.prompt_tokens_details?.cached_tokens ?? 0;
             }
 
-            const choice = value.choices[0];
+            const choice = value.choices?.[0];
 
             if (choice?.finish_reason != null) {
               finishReason = mapRequestyFinishReason(choice.finish_reason);
@@ -454,7 +454,6 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     // send tool call
                     controller.enqueue({
                       type: 'tool-call',
-                      id: toolCall.id,
                       toolName: toolCall.function.name,
                       arguments: toolCall.function.arguments,
                     });
@@ -481,7 +480,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 controller.enqueue({
                   type: 'tool-input-delta',
                   id: toolCall.id,
-                  delta: toolCallDelta.function.arguments ?? '',
+                  delta: toolCallDelta.function?.arguments ?? '',
                 });
 
                 // check if tool call is complete
@@ -492,7 +491,6 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 ) {
                   controller.enqueue({
                     type: 'tool-call',
-                    id: toolCall.id,
                     toolName: toolCall.function.name,
                     arguments: toolCall.function.arguments,
                   });
@@ -510,7 +508,6 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 if (!toolCall.sent) {
                   controller.enqueue({
                     type: 'tool-call',
-                    id: toolCall.id,
                     toolName: toolCall.function.name,
                     arguments: isParsableJson(toolCall.function.arguments)
                       ? toolCall.function.arguments
@@ -527,13 +524,13 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 usage:
                   requestyUsage.cachedTokens !== undefined &&
                   requestyUsage.cachingTokens !== undefined
-                    ? requestyUsage
+                    ? (requestyUsage as any)
                     : undefined,
               },
             };
 
             const hasProviderMetadata =
-              providerMetadata.requesty.usage !== undefined;
+              providerMetadata.requesty?.usage !== undefined;
 
             controller.enqueue({
               type: 'finish',
