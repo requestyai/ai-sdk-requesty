@@ -1,9 +1,9 @@
 import type { LanguageModelV1Prompt } from '@ai-sdk/provider';
 
 import {
-    convertReadableStreamToArray,
-    JsonTestServer,
-    StreamingTestServer,
+  convertReadableStreamToArray,
+  JsonTestServer,
+  StreamingTestServer,
 } from '@ai-sdk/provider-utils/test';
 
 import { mapRequestyChatLogProbsOutput } from './map-requesty-chat-logprobs';

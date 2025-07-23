@@ -83,7 +83,7 @@ async function testRealIntegration() {
       tools: {
         getWeather: weatherTool,
       },
-      maxTokens: 200,
+      maxOutputTokens: 200,
       temperature: 0.3,
     });
 
@@ -95,11 +95,9 @@ async function testRealIntegration() {
     if (toolResult.toolCalls.length > 0) {
       const toolCall = toolResult.toolCalls[0];
       console.log(
-        `🔧 Tool call: ${toolCall.toolName}(${JSON.stringify(toolCall.input)})`,
+        `🔧 Tool call: ${toolCall.toolName}(${JSON.stringify(toolCall.args)})`,
       );
-      if ('result' in toolCall) {
-        console.log(`🔧 Tool result: ${JSON.stringify(toolCall.result)}`);
-      }
+      console.log(`🔧 Tool result: ${JSON.stringify(toolCall.result)}`);
     }
     console.log(`💬 Final response: ${toolResult.text}\n`);
 

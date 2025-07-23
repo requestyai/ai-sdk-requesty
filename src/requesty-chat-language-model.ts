@@ -1,4 +1,3 @@
-import type { RequestyUsage } from '@/src/types';
 import type {
   LanguageModelV2,
   LanguageModelV2CallOptions,
@@ -18,6 +17,7 @@ import type {
   RequestyChatModelId,
   RequestyChatSettings,
 } from './requesty-chat-settings';
+import type { RequestyUsage } from './types';
 
 import {
   InvalidResponseDataError,
@@ -326,7 +326,10 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             // handle failed chunk parsing / validation:
             if (!chunk.success) {
               finishReason = 'error';
-              controller.enqueue({ type: 'error', error: chunk.error });
+              controller.enqueue({
+                type: 'error',
+                error: (chunk as any).error,
+              });
               return;
             }
 
