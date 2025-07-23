@@ -1,8 +1,14 @@
 import type {
-  LanguageModelV1,
-  LanguageModelV1FinishReason,
-  LanguageModelV1LogProbs,
-  LanguageModelV1StreamPart,
+  LanguageModelV2,
+  LanguageModelV2CallOptions,
+  LanguageModelV2CallWarning,
+  LanguageModelV2Content,
+  LanguageModelV2FinishReason,
+  LanguageModelV2ResponseMetadata,
+  LanguageModelV2StreamPart,
+  LanguageModelV2Usage,
+  SharedV2Headers,
+  SharedV2ProviderMetadata,
 } from '@ai-sdk/provider';
 import type { ParseResult } from '@ai-sdk/provider-utils';
 import type {
@@ -10,7 +16,6 @@ import type {
   RequestyCompletionSettings,
 } from './requesty-completion-settings';
 
-import { UnsupportedFunctionalityError } from '@ai-sdk/provider';
 import {
   combineHeaders,
   createEventSourceResponseHandler,
@@ -20,12 +25,8 @@ import {
 import { z } from 'zod';
 
 import { convertToRequestyCompletionPrompt } from './convert-to-requesty-completion-prompt';
-import { mapRequestyCompletionLogProbs } from './map-requesty-completion-logprobs';
 import { mapRequestyFinishReason } from './map-requesty-finish-reason';
-import {
-  RequestyErrorResponseSchema,
-  requestyFailedResponseHandler,
-} from './requesty-error';
+import { requestyFailedResponseHandler } from './requesty-error';
 
 type RequestyCompletionConfig = {
   provider: string;
@@ -33,16 +34,15 @@ type RequestyCompletionConfig = {
   headers: () => Record<string, string | undefined>;
   url: (options: { modelId: string; path: string }) => string;
   fetch?: typeof fetch;
-  extraBody?: Record<string, unknown>;
 };
 
-export class RequestyCompletionLanguageModel implements LanguageModelV1 {
-  readonly specificationVersion = 'v1';
-  readonly defaultObjectGenerationMode = undefined;
-
+export class RequestyCompletionLanguageModel implements LanguageModelV2 {
+  readonly specificationVersion = 'v2';
+  readonly provider: string;
   readonly modelId: RequestyCompletionModelId;
-  readonly settings: RequestyCompletionSettings;
+  readonly supportedUrls = {};
 
+  readonly settings: RequestyCompletionSettings;
   private readonly config: RequestyCompletionConfig;
 
   constructor(
@@ -53,17 +53,12 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
     this.modelId = modelId;
     this.settings = settings;
     this.config = config;
-  }
-
-  get provider(): string {
-    return this.config.provider;
+    this.provider = config.provider;
   }
 
   private getArgs({
-    mode,
-    inputFormat,
     prompt,
-    maxTokens,
+    maxOutputTokens,
     temperature,
     topP,
     frequencyPenalty,
@@ -72,37 +67,24 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
     responseFormat,
     topK,
     stopSequences,
-    providerMetadata,
-  }: Parameters<LanguageModelV1['doGenerate']>[0]) {
-    const type = mode.type;
+    providerOptions,
+  }: LanguageModelV2CallOptions) {
+    const type = 'completion';
+    const extraCallingBody = providerOptions?.['requesty'] ?? {};
 
-    const extraCallingBody = providerMetadata?.['requesty'] ?? {};
-
-    const { prompt: completionPrompt } = convertToRequestyCompletionPrompt({
-      prompt,
-      inputFormat,
-    });
-
-    const baseArgs = {
+    return {
       // model id:
       model: this.modelId,
-      models: this.settings.models,
 
       // model specific settings:
+      echo: this.settings.echo,
       logit_bias: this.settings.logitBias,
-      logprobs:
-        typeof this.settings.logprobs === 'number'
-          ? this.settings.logprobs
-          : typeof this.settings.logprobs === 'boolean'
-            ? this.settings.logprobs
-              ? 0
-              : undefined
-            : undefined,
+      logprobs: this.settings.logprobs,
       suffix: this.settings.suffix,
       user: this.settings.user,
 
       // standardized settings:
-      max_tokens: maxTokens,
+      max_tokens: maxOutputTokens,
       temperature,
       top_p: topP,
       frequency_penalty: frequencyPenalty,
@@ -113,61 +95,28 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
       response_format: responseFormat,
       top_k: topK,
 
-      // prompt:
-      prompt: completionPrompt,
-
-      // Requesty specific settings:
-      include_reasoning: this.settings.includeReasoning,
-      reasoning_effort: this.settings.reasoningEffort,
+      // prompt
+      prompt: convertToRequestyCompletionPrompt(prompt),
 
       // extra body:
-      ...this.config.extraBody,
-      ...this.settings.extraBody,
       ...extraCallingBody,
     };
-
-    switch (type) {
-      case 'regular': {
-        if (mode.tools?.length) {
-          throw new UnsupportedFunctionalityError({
-            functionality: 'tools',
-          });
-        }
-
-        if (mode.toolChoice) {
-          throw new UnsupportedFunctionalityError({
-            functionality: 'toolChoice',
-          });
-        }
-
-        return baseArgs;
-      }
-
-      case 'object-json': {
-        throw new UnsupportedFunctionalityError({
-          functionality: 'object-json mode',
-        });
-      }
-
-      case 'object-tool': {
-        throw new UnsupportedFunctionalityError({
-          functionality: 'object-tool mode',
-        });
-      }
-
-      // Handle all non-text types with a single default case
-      default: {
-        const _exhaustiveCheck: never = type;
-        throw new UnsupportedFunctionalityError({
-          functionality: `${_exhaustiveCheck} mode`,
-        });
-      }
-    }
   }
 
-  async doGenerate(
-    options: Parameters<LanguageModelV1['doGenerate']>[0],
-  ): Promise<Awaited<ReturnType<LanguageModelV1['doGenerate']>>> {
+  async doGenerate(options: LanguageModelV2CallOptions): Promise<{
+    content: Array<LanguageModelV2Content>;
+    finishReason: LanguageModelV2FinishReason;
+    usage: LanguageModelV2Usage;
+    providerMetadata?: SharedV2ProviderMetadata;
+    request?: {
+      body?: unknown;
+    };
+    response?: LanguageModelV2ResponseMetadata & {
+      headers?: SharedV2Headers;
+      body?: unknown;
+    };
+    warnings: Array<LanguageModelV2CallWarning>;
+  }> {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
@@ -179,45 +128,54 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
       body: args,
       failedResponseHandler: requestyFailedResponseHandler,
       successfulResponseHandler: createJsonResponseHandler(
-        RequestyCompletionChunkSchema,
+        RequestyCompletionResponseSchema,
       ),
       abortSignal: options.abortSignal,
       fetch: this.config.fetch,
     });
 
     const { prompt: rawPrompt, ...rawSettings } = args;
-    if ('error' in response) {
-      throw new Error(`${response.error.message}`);
-    }
-
     const choice = response.choices[0];
 
     if (!choice) {
-      throw new Error('No choice in Requesty completion response');
+      throw new Error('No choice in response');
     }
 
+    const content: Array<LanguageModelV2Content> = [
+      {
+        type: 'text',
+        text: choice.text,
+      },
+    ];
+
     return {
-      response: {
-        id: response.id,
-        modelId: response.model,
-      },
-      text: choice.text ?? '',
-      reasoning: choice.reasoning || undefined,
-      usage: {
-        promptTokens: response.usage?.prompt_tokens ?? 0,
-        completionTokens: response.usage?.completion_tokens ?? 0,
-      },
+      content,
       finishReason: mapRequestyFinishReason(choice.finish_reason),
-      logprobs: mapRequestyCompletionLogProbs(choice.logprobs),
-      rawCall: { rawPrompt, rawSettings },
-      rawResponse: { headers: responseHeaders },
+      usage: {
+        inputTokens: response.usage?.prompt_tokens ?? 0,
+        outputTokens: response.usage?.completion_tokens ?? 0,
+        totalTokens: response.usage?.total_tokens ?? 0,
+      },
+      request: { body: rawSettings },
+      response: {
+        id: response.id ?? '',
+        modelId: response.model ?? '',
+        headers: responseHeaders,
+        body: response,
+      },
       warnings: [],
     };
   }
 
-  async doStream(
-    options: Parameters<LanguageModelV1['doStream']>[0],
-  ): Promise<Awaited<ReturnType<LanguageModelV1['doStream']>>> {
+  async doStream(options: LanguageModelV2CallOptions): Promise<{
+    stream: ReadableStream<LanguageModelV2StreamPart>;
+    request?: {
+      body?: unknown;
+    };
+    response?: {
+      headers?: SharedV2Headers;
+    };
+  }> {
     const args = this.getArgs(options);
 
     const { responseHeaders, value: response } = await postJsonToApi({
@@ -227,18 +185,12 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
       }),
       headers: combineHeaders(this.config.headers(), options.headers),
       body: {
-        ...this.getArgs(options),
+        ...args,
         stream: true,
-
-        // only include stream_options when in strict compatibility mode:
-        stream_options:
-          this.config.compatibility === 'strict'
-            ? { include_usage: true }
-            : undefined,
       },
       failedResponseHandler: requestyFailedResponseHandler,
       successfulResponseHandler: createEventSourceResponseHandler(
-        RequestyCompletionChunkSchema,
+        RequestyCompletionStreamChunkSchema,
       ),
       abortSignal: options.abortSignal,
       fetch: this.config.fetch,
@@ -246,18 +198,18 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
 
     const { prompt: rawPrompt, ...rawSettings } = args;
 
-    let finishReason: LanguageModelV1FinishReason = 'other';
-    let usage: { promptTokens: number; completionTokens: number } = {
-      promptTokens: Number.NaN,
-      completionTokens: Number.NaN,
+    let finishReason: LanguageModelV2FinishReason = 'other';
+    let usage: LanguageModelV2Usage = {
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
     };
-    let logprobs: LanguageModelV1LogProbs;
 
     return {
       stream: response.pipeThrough(
         new TransformStream<
-          ParseResult<z.infer<typeof RequestyCompletionChunkSchema>>,
-          LanguageModelV1StreamPart
+          ParseResult<z.infer<typeof RequestyCompletionStreamChunkSchema>>,
+          LanguageModelV2StreamPart
         >({
           transform(chunk, controller) {
             // handle failed chunk parsing / validation:
@@ -276,14 +228,29 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
               return;
             }
 
+            if (value.id) {
+              controller.enqueue({
+                type: 'response-metadata',
+                id: value.id,
+              });
+            }
+
+            if (value.model) {
+              controller.enqueue({
+                type: 'response-metadata',
+                modelId: value.model,
+              });
+            }
+
             if (value.usage != null) {
               usage = {
-                promptTokens: value.usage.prompt_tokens,
-                completionTokens: value.usage.completion_tokens,
+                inputTokens: value.usage.prompt_tokens ?? 0,
+                outputTokens: value.usage.completion_tokens ?? 0,
+                totalTokens: value.usage.total_tokens ?? 0,
               };
             }
 
-            const choice = value.choices[0];
+            const choice = value.choices?.[0];
 
             if (choice?.finish_reason != null) {
               finishReason = mapRequestyFinishReason(choice.finish_reason);
@@ -292,16 +259,9 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
             if (choice?.text != null) {
               controller.enqueue({
                 type: 'text-delta',
-                textDelta: choice.text,
+                id: 'completion',
+                delta: choice.text,
               });
-            }
-
-            const mappedLogprobs = mapRequestyCompletionLogProbs(
-              choice?.logprobs,
-            );
-            if (mappedLogprobs?.length) {
-              if (logprobs === undefined) logprobs = [];
-              logprobs.push(...mappedLogprobs);
             }
           },
 
@@ -309,48 +269,54 @@ export class RequestyCompletionLanguageModel implements LanguageModelV1 {
             controller.enqueue({
               type: 'finish',
               finishReason,
-              logprobs,
               usage,
             });
           },
         }),
       ),
-      rawCall: { rawPrompt, rawSettings },
-      rawResponse: { headers: responseHeaders },
-      warnings: [],
+      request: { body: rawSettings },
+      response: { headers: responseHeaders },
     };
   }
 }
 
-// limited version of the schema, focussed on what is needed for the implementation
-// this approach limits breakages when the API changes and increases efficiency
-const RequestyCompletionChunkSchema = z.union([
-  z.object({
-    id: z.string().optional(),
-    model: z.string().optional(),
-    choices: z.array(
+const RequestyCompletionResponseSchema = z.object({
+  id: z.string().optional(),
+  model: z.string().optional(),
+  choices: z.array(
+    z.object({
+      text: z.string(),
+      finish_reason: z.string().nullable(),
+      logprobs: z.any().optional(),
+    }),
+  ),
+  usage: z
+    .object({
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+      total_tokens: z.number().optional(),
+    })
+    .optional(),
+});
+
+const RequestyCompletionStreamChunkSchema = z.object({
+  id: z.string().optional(),
+  model: z.string().optional(),
+  choices: z
+    .array(
       z.object({
-        text: z.string(),
-        reasoning: z.string().nullish().optional(),
-        finish_reason: z.string().nullish(),
-        index: z.number(),
-        logprobs: z
-          .object({
-            tokens: z.array(z.string()),
-            token_logprobs: z.array(z.number()),
-            top_logprobs: z.array(z.record(z.string(), z.number())).nullable(),
-          })
-          .nullable()
-          .optional(),
+        text: z.string().optional(),
+        finish_reason: z.string().nullable().optional(),
+        logprobs: z.any().optional(),
       }),
-    ),
-    usage: z
-      .object({
-        prompt_tokens: z.number(),
-        completion_tokens: z.number(),
-      })
-      .optional()
-      .nullable(),
-  }),
-  RequestyErrorResponseSchema,
-]);
+    )
+    .optional(),
+  usage: z
+    .object({
+      prompt_tokens: z.number().optional(),
+      completion_tokens: z.number().optional(),
+      total_tokens: z.number().optional(),
+    })
+    .optional(),
+  error: z.any().optional(),
+});
