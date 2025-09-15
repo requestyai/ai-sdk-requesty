@@ -4,27 +4,27 @@ The [Requesty](https://requesty.ai/) provider for the [AI SDK v5](https://sdk.ve
 
 ## 🚀 AI SDK v5 Support
 
-This is the **AI SDK v5 compatible** version of the Requesty provider. For AI SDK v4, use the stable version:
+This package now **fully supports AI SDK v5** with all stable features! For backwards compatibility with AI SDK v4, you can still use the older version:
 
 ```bash
-# AI SDK v5 (Beta)
-npm install @requesty/ai-sdk@beta
+# AI SDK v5 (Stable - Latest)
+npm install @requesty/ai-sdk
 
-# AI SDK v4 (Stable)
-npm install @requesty/ai-sdk@latest
+# AI SDK v4 (Legacy)
+npm install @requesty/ai-sdk@0.0.9
 ```
 
 ## Installation
 
 ```bash
 # For pnpm
-pnpm add @requesty/ai-sdk@beta ai@beta
+pnpm add @requesty/ai-sdk ai
 
 # For npm
-npm install @requesty/ai-sdk@beta ai@beta
+npm install @requesty/ai-sdk ai
 
 # For yarn
-yarn add @requesty/ai-sdk@beta ai@beta
+yarn add @requesty/ai-sdk ai
 ```
 
 ## API Key Setup
@@ -67,8 +67,9 @@ const { text } = await generateText({
 ### Text Generation
 
 ```ts
-import { generateText } from 'ai';
 import { requesty } from '@requesty/ai-sdk';
+// Streaming
+import { generateText, streamText } from 'ai';
 
 // Non-streaming
 const { text } = await generateText({
@@ -76,9 +77,6 @@ const { text } = await generateText({
   prompt: 'Explain quantum computing',
   maxOutputTokens: 500,
 });
-
-// Streaming
-import { streamText } from 'ai';
 
 const { textStream } = streamText({
   model: requesty.chat('anthropic/claude-3.5-sonnet'),
@@ -314,12 +312,14 @@ type MyToolResult = ToolResultUnion<typeof myTools>;
 
 If you're upgrading from AI SDK v4:
 
-1. **Install beta versions**:
+1. **Install stable versions**:
+
    ```bash
-   npm install @requesty/ai-sdk@beta ai@beta
+   npm install @requesty/ai-sdk ai
    ```
 
 2. **Update imports** (AI SDK v5 uses different message types):
+
    ```ts
    // Old (v4)
    const messages = [{ role: 'user', content: 'Hello' }];
@@ -330,6 +330,7 @@ If you're upgrading from AI SDK v4:
    ```
 
 3. **Update streaming** (new protocol in v5):
+
    ```ts
    // Old (v4)
    const stream = await streamText(/* ... */);
@@ -418,9 +419,9 @@ const researchAgent = async (query: string) => {
 
 ```ts
 import {
-  NoSuchToolError,
   InvalidToolArgumentsError,
-  ToolExecutionError
+  NoSuchToolError,
+  ToolExecutionError,
 } from 'ai';
 
 try {
