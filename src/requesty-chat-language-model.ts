@@ -243,7 +243,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
           type: 'tool-call',
           toolCallId: toolCall.id ?? generateId(),
           toolName: toolCall.function.name,
-          input: parsedArguments,
+          input: parsedArguments as any, // AI SDK expects unknown/any for tool input
         });
       }
     }
