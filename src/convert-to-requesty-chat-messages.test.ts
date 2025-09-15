@@ -40,19 +40,62 @@ describe('user messages', () => {
 
     expect(result).toEqual([{ role: 'user', content: 'Hello' }]);
   });
+
+  it('should handle multiple text parts', async () => {
+    const result = convertToRequestyChatMessages([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello ' },
+          { type: 'text', text: 'world' },
+        ],
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello ' },
+          { type: 'text', text: 'world' },
+        ],
+      },
+    ]);
+  });
+
+  it('should handle file parts that are not images', async () => {
+    const result = convertToRequestyChatMessages([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello' },
+          {
+            type: 'file',
+            data: new Uint8Array([0, 1, 2, 3]),
+            mediaType: 'application/pdf',
+          },
+        ],
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: 'Hello' },
+          { type: 'text', text: 'file content' },
+        ],
+      },
+    ]);
+  });
 });
 
-describe('cache control', () => {
-  it('should pass cache control from system message provider metadata', () => {
+describe('system messages', () => {
+  it('should convert system messages', () => {
     const result = convertToRequestyChatMessages([
       {
         role: 'system',
         content: 'System prompt',
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
       },
     ]);
 
@@ -60,270 +103,17 @@ describe('cache control', () => {
       {
         role: 'system',
         content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
       },
     ]);
   });
+});
 
-  it('should pass cache control from user message provider metadata (single text part)', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [{ type: 'text', text: 'Hello' }],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: 'Hello',
-        cache_control: { type: 'ephemeral' },
-      },
-    ]);
-  });
-
-  it('should pass cache control from user message provider metadata (multiple parts)', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Hello' },
-          {
-            type: 'image',
-            image: new Uint8Array([0, 1, 2, 3]),
-            mimeType: 'image/png',
-          },
-        ],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'image_url',
-            image_url: { url: 'data:image/png;base64,AAECAw==' },
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should pass cache control to multiple image parts from user message provider metadata', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Hello' },
-          {
-            type: 'image',
-            image: new Uint8Array([0, 1, 2, 3]),
-            mimeType: 'image/png',
-          },
-          {
-            type: 'image',
-            image: new Uint8Array([4, 5, 6, 7]),
-            mimeType: 'image/jpeg',
-          },
-        ],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'image_url',
-            image_url: { url: 'data:image/png;base64,AAECAw==' },
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'image_url',
-            image_url: { url: 'data:image/jpeg;base64,BAUGBw==' },
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should pass cache control to file parts from user message provider metadata', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'Hello' },
-          {
-            type: 'file',
-            data: 'file content',
-            mimeType: 'text/plain',
-          },
-        ],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'text',
-            text: 'file content',
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should handle mixed part-specific and message-level cache control for multiple parts', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            // No part-specific provider metadata
-          },
-          {
-            type: 'image',
-            image: new Uint8Array([0, 1, 2, 3]),
-            mimeType: 'image/png',
-            providerMetadata: {
-              anthropic: {
-                cacheControl: { type: 'ephemeral' },
-              },
-            },
-          },
-          {
-            type: 'file',
-            data: 'file content',
-            mimeType: 'text/plain',
-            // No part-specific provider metadata
-          },
-        ],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'image_url',
-            image_url: { url: 'data:image/png;base64,AAECAw==' },
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'text',
-            text: 'file content',
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should pass cache control from individual content part provider metadata', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            providerMetadata: {
-              anthropic: {
-                cacheControl: { type: 'ephemeral' },
-              },
-            },
-          },
-          {
-            type: 'image',
-            image: new Uint8Array([0, 1, 2, 3]),
-            mimeType: 'image/png',
-          },
-        ],
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Hello',
-            cache_control: { type: 'ephemeral' },
-          },
-          {
-            type: 'image_url',
-            image_url: { url: 'data:image/png;base64,AAECAw==' },
-          },
-        ],
-      },
-    ]);
-  });
-
-  it('should pass cache control from assistant message provider metadata', () => {
+describe('assistant messages', () => {
+  it('should convert assistant messages with text', () => {
     const result = convertToRequestyChatMessages([
       {
         role: 'assistant',
         content: [{ type: 'text', text: 'Assistant response' }],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
       },
     ]);
 
@@ -331,12 +121,46 @@ describe('cache control', () => {
       {
         role: 'assistant',
         content: 'Assistant response',
-        cache_control: { type: 'ephemeral' },
       },
     ]);
   });
 
-  it('should pass cache control from tool message provider metadata', () => {
+  it('should convert assistant messages with tool calls', () => {
+    const result = convertToRequestyChatMessages([
+      {
+        role: 'assistant',
+        content: [
+          {
+            type: 'tool-call',
+            toolCallId: '12345',
+            toolName: 'get-weather',
+            input: { location: 'Paris' },
+          },
+        ],
+      },
+    ]);
+
+    expect(result).toEqual([
+      {
+        role: 'assistant',
+        content: null,
+        tool_calls: [
+          {
+            id: '12345',
+            type: 'function',
+            function: {
+              name: 'get-weather',
+              arguments: JSON.stringify({ location: 'Paris' }),
+            },
+          },
+        ],
+      },
+    ]);
+  });
+});
+
+describe('tool messages', () => {
+  it('should convert tool messages with JSON output', () => {
     const result = convertToRequestyChatMessages([
       {
         role: 'tool',
@@ -344,16 +168,10 @@ describe('cache control', () => {
           {
             type: 'tool-result',
             toolCallId: 'call-123',
-            toolName: 'calculator',
-            result: { answer: 42 },
-            isError: false,
+            toolName: 'get-weather',
+            output: { answer: 42 },
           },
         ],
-        providerMetadata: {
-          anthropic: {
-            cacheControl: { type: 'ephemeral' },
-          },
-        },
       },
     ]);
 
@@ -361,70 +179,7 @@ describe('cache control', () => {
       {
         role: 'tool',
         tool_call_id: 'call-123',
-        content: JSON.stringify({ answer: 42 }),
-        cache_control: { type: 'ephemeral' },
-      },
-    ]);
-  });
-
-  it('should support the alias cache_control field', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'system',
-        content: 'System prompt',
-        providerMetadata: {
-          anthropic: {
-            cache_control: { type: 'ephemeral' },
-          },
-        },
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'system',
-        content: 'System prompt',
-        cache_control: { type: 'ephemeral' },
-      },
-    ]);
-  });
-
-  it('should support cache control on last message in content array', () => {
-    const result = convertToRequestyChatMessages([
-      {
-        role: 'system',
-        content: 'System prompt',
-      },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'User prompt' },
-          {
-            type: 'text',
-            text: 'User prompt 2',
-            providerMetadata: {
-              anthropic: { cacheControl: { type: 'ephemeral' } },
-            },
-          },
-        ],
-      },
-    ]);
-
-    expect(result).toEqual([
-      {
-        role: 'system',
-        content: 'System prompt',
-      },
-      {
-        role: 'user',
-        content: [
-          { type: 'text', text: 'User prompt' },
-          {
-            type: 'text',
-            text: 'User prompt 2',
-            cache_control: { type: 'ephemeral' },
-          },
-        ],
+        content: '{"answer":42}',
       },
     ]);
   });

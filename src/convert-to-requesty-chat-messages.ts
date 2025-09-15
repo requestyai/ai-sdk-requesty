@@ -22,48 +22,25 @@ export function convertToRequestyChatMessages(
           content: message.content,
         };
 
-        // Add cache control if present in provider metadata
-        const cacheControl =
-          message.providerMetadata?.anthropic?.cacheControl ||
-          message.providerMetadata?.anthropic?.cache_control;
-        if (cacheControl) {
-          (systemMessage as any).cache_control = cacheControl;
-        }
-
         messages.push(systemMessage);
         break;
       }
 
       case 'user': {
         let text = '';
-        const textParts: Array<{
-          type: 'text';
-          text: string;
-          cache_control?: any;
-        }> = [];
+        const textParts: Array<{ type: 'text'; text: string }> = [];
         const imageParts: RequestyImagePart[] = [];
-        let hasPartLevelCacheControl = false;
+        // Track if we need multi-part content structure
 
         for (const part of message.content) {
           switch (part.type) {
             case 'text': {
-              const textPart: {
-                type: 'text';
-                text: string;
-                cache_control?: any;
-              } = {
+              const textPart = {
                 type: 'text',
                 text: part.text,
               };
 
-              // Add part-level cache control if present
-              const partCacheControl =
-                part.providerMetadata?.anthropic?.cacheControl ||
-                part.providerMetadata?.anthropic?.cache_control;
-              if (partCacheControl) {
-                textPart.cache_control = partCacheControl;
-                hasPartLevelCacheControl = true;
-              }
+              // Note: Cache control is handled by the provider, not exposed in message format
 
               textParts.push(textPart);
               text += part.text;
@@ -88,14 +65,7 @@ export function convertToRequestyChatMessages(
                 image_url: { url: data },
               };
 
-              // Add part-level cache control if present
-              const partCacheControl =
-                part.providerMetadata?.anthropic?.cacheControl ||
-                part.providerMetadata?.anthropic?.cache_control;
-              if (partCacheControl) {
-                (imagePart as any).cache_control = partCacheControl;
-                hasPartLevelCacheControl = true;
-              }
+              // Note: Cache control is handled by the provider, not exposed in message format
 
               imageParts.push(imagePart);
               break;
@@ -122,35 +92,17 @@ export function convertToRequestyChatMessages(
                   image_url: { url: data },
                 };
 
-                // Add part-level cache control if present
-                const partCacheControl =
-                  part.providerMetadata?.anthropic?.cacheControl ||
-                  part.providerMetadata?.anthropic?.cache_control;
-                if (partCacheControl) {
-                  (imagePart as any).cache_control = partCacheControl;
-                  hasPartLevelCacheControl = true;
-                }
+                // Note: Cache control is handled by the provider, not exposed in message format
 
                 imageParts.push(imagePart);
               } else {
                 // Handle non-image files as text
-                const textPart: {
-                  type: 'text';
-                  text: string;
-                  cache_control?: any;
-                } = {
+                const textPart = {
                   type: 'text',
                   text: 'file content',
                 };
 
-                // Add part-level cache control if present
-                const partCacheControl =
-                  part.providerMetadata?.anthropic?.cacheControl ||
-                  part.providerMetadata?.anthropic?.cache_control;
-                if (partCacheControl) {
-                  textPart.cache_control = partCacheControl;
-                  hasPartLevelCacheControl = true;
-                }
+                // Note: Cache control is handled by the provider, not exposed in message format
 
                 textParts.push(textPart);
                 text += 'file content';
@@ -168,10 +120,7 @@ export function convertToRequestyChatMessages(
         }
 
         // Determine if we need multi-part content
-        const needsMultiPart =
-          hasPartLevelCacheControl ||
-          imageParts.length > 0 ||
-          textParts.length > 1;
+        const needsMultiPart = imageParts.length > 0 || textParts.length > 1;
 
         if (needsMultiPart) {
           const content: Array<RequestyTextPart | RequestyImagePart> = [];
@@ -183,15 +132,7 @@ export function convertToRequestyChatMessages(
             content,
           };
 
-          // Add message-level cache control if present and no part-level cache control
-          if (!hasPartLevelCacheControl) {
-            const cacheControl =
-              message.providerMetadata?.anthropic?.cacheControl ||
-              message.providerMetadata?.anthropic?.cache_control;
-            if (cacheControl) {
-              (userMessage as any).cache_control = cacheControl;
-            }
-          }
+          // Note: Cache control is handled by the provider, not exposed in message format
 
           messages.push(userMessage);
         } else {
@@ -199,14 +140,6 @@ export function convertToRequestyChatMessages(
             role: 'user',
             content: text,
           };
-
-          // Add cache control if present in provider metadata
-          const cacheControl =
-            message.providerMetadata?.anthropic?.cacheControl ||
-            message.providerMetadata?.anthropic?.cache_control;
-          if (cacheControl) {
-            (userMessage as any).cache_control = cacheControl;
-          }
 
           messages.push(userMessage);
         }
@@ -274,13 +207,7 @@ export function convertToRequestyChatMessages(
           assistantMessage.tool_calls = toolCalls;
         }
 
-        // Add cache control if present in provider metadata
-        const cacheControl =
-          message.providerMetadata?.anthropic?.cacheControl ||
-          message.providerMetadata?.anthropic?.cache_control;
-        if (cacheControl) {
-          (assistantMessage as any).cache_control = cacheControl;
-        }
+        // Note: Cache control is handled by the provider, not exposed in message format
 
         messages.push(assistantMessage);
         break;
@@ -328,13 +255,7 @@ export function convertToRequestyChatMessages(
               content,
             };
 
-            // Add cache control if present in provider metadata
-            const cacheControl =
-              message.providerMetadata?.anthropic?.cacheControl ||
-              message.providerMetadata?.anthropic?.cache_control;
-            if (cacheControl) {
-              (toolMessage as any).cache_control = cacheControl;
-            }
+            // Note: Cache control is handled by the provider, not exposed in message format
 
             messages.push(toolMessage);
           }
