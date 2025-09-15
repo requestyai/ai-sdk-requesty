@@ -178,7 +178,8 @@ async function testRealIntegration() {
             { type: 'text', text: 'Describe this simple image:' },
             {
               type: 'image',
-              image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+              image:
+                'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
             },
           ],
         },
@@ -203,7 +204,8 @@ async function testRealIntegration() {
         messages: [
           {
             role: 'user',
-            content: 'Think step by step: What is 15 * 23? Show your reasoning.',
+            content:
+              'Think step by step: What is 15 * 23? Show your reasoning.',
           },
         ],
         maxOutputTokens: 200,
@@ -215,7 +217,9 @@ async function testRealIntegration() {
         `📊 Usage: ${reasoningResult.usage.inputTokens} input + ${reasoningResult.usage.outputTokens} output = ${reasoningResult.usage.totalTokens} total tokens\n`,
       );
     } catch (error) {
-      console.log('⚠️ Reasoning test skipped (o1 model might not be available)');
+      console.log(
+        '⚠️ Reasoning test skipped (o1 model might not be available)',
+      );
       console.log(`Error: ${error instanceof Error ? error.message : error}\n`);
     }
 
@@ -250,7 +254,9 @@ async function testRealIntegration() {
     console.log('✅ 7. Reasoning models (OpenAI o1)');
     console.log('✅ 8. AI SDK v5 message format');
     console.log('\n🚀 Requesty AI SDK v5 integration is working perfectly!');
-    console.log('📋 All v5 features tested: messages, multi-modal, tools, streaming, provider options');
+    console.log(
+      '📋 All v5 features tested: messages, multi-modal, tools, streaming, provider options',
+    );
   } catch (error) {
     console.error('❌ Integration test failed:', error);
     if (error instanceof Error) {

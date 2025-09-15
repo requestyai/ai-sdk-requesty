@@ -55,10 +55,7 @@ describe('user messages', () => {
     expect(result).toEqual([
       {
         role: 'user',
-        content: [
-          { type: 'text', text: 'Hello ' },
-          { type: 'text', text: 'world' },
-        ],
+        content: 'Hello world',
       },
     ]);
   });
@@ -81,10 +78,7 @@ describe('user messages', () => {
     expect(result).toEqual([
       {
         role: 'user',
-        content: [
-          { type: 'text', text: 'Hello' },
-          { type: 'text', text: 'file content' },
-        ],
+        content: 'Hellofile content',
       },
     ]);
   });

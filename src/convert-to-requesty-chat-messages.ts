@@ -55,9 +55,20 @@ export function convertToRequestyChatMessages(
                 // Convert Uint8Array to base64
                 const base64String = Buffer.from(part.image).toString('base64');
                 data = `data:${part.mimeType};base64,${base64String}`;
+              } else if (typeof part.image === 'string') {
+                // Check if it's already a data URL or regular URL
+                if (
+                  part.image.startsWith('data:') ||
+                  part.image.startsWith('http')
+                ) {
+                  data = part.image;
+                } else {
+                  // It's a raw base64 string, format it properly
+                  data = `data:${part.mimeType || 'image/png'};base64,${part.image}`;
+                }
               } else {
-                // Assume it's already a base64 string or URL
-                data = part.image;
+                // Fallback
+                data = String(part.image);
               }
 
               const imagePart: RequestyImagePart = {
@@ -82,9 +93,20 @@ export function convertToRequestyChatMessages(
                     'base64',
                   );
                   data = `data:${part.mediaType};base64,${base64String}`;
+                } else if (typeof part.data === 'string') {
+                  // Check if it's already a data URL or regular URL
+                  if (
+                    part.data.startsWith('data:') ||
+                    part.data.startsWith('http')
+                  ) {
+                    data = part.data;
+                  } else {
+                    // It's a raw base64 string, format it properly
+                    data = `data:${part.mediaType};base64,${part.data}`;
+                  }
                 } else {
-                  // Assume it's already a base64 string or URL
-                  data = part.data;
+                  // Fallback
+                  data = String(part.data);
                 }
 
                 const imagePart: RequestyImagePart = {
@@ -120,9 +142,10 @@ export function convertToRequestyChatMessages(
         }
 
         // Determine if we need multi-part content
-        const needsMultiPart = imageParts.length > 0 || textParts.length > 1;
+        // Only use multi-part if we have images. Text-only should always be consolidated.
+        const hasImages = imageParts.length > 0;
 
-        if (needsMultiPart) {
+        if (hasImages) {
           const content: Array<RequestyTextPart | RequestyImagePart> = [];
           content.push(...textParts);
           content.push(...imageParts);
@@ -136,6 +159,7 @@ export function convertToRequestyChatMessages(
 
           messages.push(userMessage);
         } else {
+          // Text-only: consolidate to simple string
           const userMessage: RequestyChatMessage = {
             role: 'user',
             content: text,
