@@ -324,6 +324,8 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
     const requestyUsage: Partial<RequestyUsage> = {};
 
+    let activeTextId: string | undefined;
+
     return {
       stream: response.pipeThrough(
         new TransformStream<
@@ -390,9 +392,14 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             const delta = choice.delta;
 
             if (delta.content != null) {
+              if (activeTextId == null) {
+                activeTextId = generateId();
+                controller.enqueue({ type: 'text-start', id: activeTextId });
+              }
+
               controller.enqueue({
                 type: 'text-delta',
-                id: generateId(),
+                id: activeTextId,
                 delta: delta.content,
               });
             }
@@ -514,6 +521,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
           },
 
           flush(controller) {
+            if (activeTextId != null) {
+              controller.enqueue({ type: 'text-end', id: activeTextId });
+              activeTextId = undefined;
+            }
+
             // Forward any unsent tool calls if finish reason is 'tool-calls'
             if (finishReason === 'tool-calls') {
               for (const toolCall of toolCalls) {
