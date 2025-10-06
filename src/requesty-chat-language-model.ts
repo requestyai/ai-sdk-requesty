@@ -231,19 +231,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     // Add tool calls
     if (choice.message.tool_calls) {
       for (const toolCall of choice.message.tool_calls) {
-        let parsedArguments: unknown;
-        try {
-          parsedArguments = JSON.parse(toolCall.function.arguments);
-        } catch {
-          // If parsing fails, use the raw string
-          parsedArguments = toolCall.function.arguments;
-        }
-
         content.push({
           type: 'tool-call',
           toolCallId: toolCall.id ?? generateId(),
           toolName: toolCall.function.name,
-          input: parsedArguments as any, // AI SDK expects unknown/any for tool input
+          input: toolCall.function.arguments as any, // AI SDK expects unknown/any for tool input
         });
       }
     }
