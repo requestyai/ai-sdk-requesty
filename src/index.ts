@@ -7,7 +7,6 @@ export type {
     RequestyCompletionModelId,
     RequestyCompletionSettings,
 } from './requesty-completion-settings'
-export * from './requesty-facade'
 export * from './requesty-provider'
 export type {
     RequestyChatMessage,
