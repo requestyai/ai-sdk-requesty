@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { convertToRequestyChatMessages } from './convert-to-requesty-chat-messages'
 
 describe('user messages', () => {

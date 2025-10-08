@@ -1,5 +1,5 @@
 import type { LanguageModelV2Prompt } from 'ai'
-import { describe, expect, it } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { convertToRequestyChatMessages } from './convert-to-requesty-chat-messages.js'
 
 describe('Image Handling', () => {
