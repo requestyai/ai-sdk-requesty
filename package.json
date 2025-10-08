@@ -1,77 +1,72 @@
 {
-  "name": "@requesty/ai-sdk",
-  "version": "1.0.1",
-  "license": "Apache-2.0",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/**/*"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist && rm -rf internal/dist",
-    "dev": "tsup --watch",
-    "lint": "eslint \"./**/*.ts*\"",
-    "typecheck": "tsc --noEmit",
-    "stylecheck": "prettier --check \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
-    "format": "prettier --write \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
-    "test": "npm run test:node && npm run test:edge",
-    "test:edge": "vitest --config vitest.edge.config.ts --run",
-    "test:node": "vitest --config vitest.node.config.ts --run"
-  },
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+    "name": "@requesty/ai-sdk",
+    "version": "1.0.1",
+    "license": "Apache-2.0",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "files": ["dist/**/*"],
+    "scripts": {
+        "build": "tsup",
+        "clean": "rm -rf dist && rm -rf internal/dist",
+        "dev": "tsup --watch",
+        "lint": "biome lint",
+        "typecheck": "tsc --noEmit",
+        "stylecheck": "biome check --linter-enabled=false",
+        "format": "biome check --linter-enabled=false --fix",
+        "test": "npm run test:node && npm run test:edge",
+        "test:edge": "vitest --config vitest.edge.config.ts --run",
+        "test:node": "vitest --config vitest.node.config.ts --run"
     },
-    "./internal": {
-      "types": "./dist/internal/index.d.ts",
-      "import": "./dist/internal/index.mjs",
-      "module": "./dist/internal/index.mjs",
-      "require": "./dist/internal/index.js"
-    }
-  },
-  "dependencies": {
-    "@ai-sdk/provider": "^2.0.0",
-    "@ai-sdk/provider-utils": "^3.0.9"
-  },
-  "devDependencies": {
-    "@edge-runtime/vm": "5.0.0",
-    "@ianvs/prettier-plugin-sort-imports": "4.4.1",
-    "@types/jest": "29.5.14",
-    "@types/node": "22.13.5",
-    "ai": "^5.0.52",
-    "msw": "^2.11.3",
-    "prettier": "3.5.2",
-    "tsup": "8.4.0",
-    "typescript": "5.7.3",
-    "vitest": "3.0.7",
-    "zod": "^4.1.11"
-  },
-  "peerDependencies": {
-    "zod": "^3.25.76 || ^4.0.0",
-    "vite": "^7.1.7"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "homepage": "https://github.com/requestyai/ai-sdk-requesty",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/requestyai/ai-sdk-requesty"
-  },
-  "bugs": {
-    "url": "https://github.com/requestyai/ai-sdk-requesty/issues"
-  },
-  "keywords": [
-    "ai"
-  ],
-  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        },
+        "./internal": {
+            "types": "./dist/internal/index.d.ts",
+            "import": "./dist/internal/index.mjs",
+            "module": "./dist/internal/index.mjs",
+            "require": "./dist/internal/index.js"
+        }
+    },
+    "dependencies": {
+        "@ai-sdk/provider": "^2.0.0",
+        "@ai-sdk/provider-utils": "^3.0.9"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.2.5",
+        "@edge-runtime/vm": "5.0.0",
+        "@types/jest": "29.5.14",
+        "@types/node": "22.13.5",
+        "ai": "^5.0.52",
+        "msw": "^2.11.3",
+        "tsup": "8.4.0",
+        "typescript": "5.7.3",
+        "vitest": "3.0.7",
+        "zod": "^4.1.11"
+    },
+    "peerDependencies": {
+        "vite": "^7.1.7",
+        "zod": "^3.25.76 || ^4.0.0"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "homepage": "https://github.com/requestyai/ai-sdk-requesty",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/requestyai/ai-sdk-requesty"
+    },
+    "bugs": {
+        "url": "https://github.com/requestyai/ai-sdk-requesty/issues"
+    },
+    "keywords": ["ai"],
+    "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c"
 }

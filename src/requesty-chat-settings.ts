@@ -1,10 +1,10 @@
-import type { RequestySharedSettings } from './types';
+import type { RequestySharedSettings } from './types'
 
 // https://router.reques.ai/api/v1/models
-export type RequestyChatModelId = string;
+export type RequestyChatModelId = string
 
 export type RequestyChatSettings = {
-  /**
+    /**
 Modify the likelihood of specified tokens appearing in the completion.
 
 Accepts a JSON object that maps tokens (specified by their token ID in
@@ -18,9 +18,9 @@ should result in a ban or exclusive selection of the relevant token.
 As an example, you can pass {"50256": -100} to prevent the <|endoftext|>
 token from being generated.
 */
-  logitBias?: Record<number, number>;
+    logitBias?: Record<number, number>
 
-  /**
+    /**
 Return the log probabilities of the tokens. Including logprobs will increase
 the response size and can slow down response times. However, it can
 be useful to better understand how the model is behaving.
@@ -31,16 +31,16 @@ were generated.
 Setting to a number will return the log probabilities of the top n
 tokens that were generated.
 */
-  logprobs?: boolean | number;
+    logprobs?: boolean | number
 
-  /**
+    /**
 Whether to enable parallel function calling during tool use. Default to true.
    */
-  parallelToolCalls?: boolean;
+    parallelToolCalls?: boolean
 
-  /**
+    /**
 A unique identifier representing your end-user, which can help Requesty to
 monitor and detect abuse. Learn more.
 */
-  user?: string;
-} & RequestySharedSettings;
+    user?: string
+} & RequestySharedSettings

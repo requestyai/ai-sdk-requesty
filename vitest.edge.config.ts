@@ -1,10 +1,9 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  test: {
-    environment: 'edge-runtime',
-    globals: true,
-    include: ['**/*.test.ts', '**/*.test.tsx'],
-  },
-});
+    test: {
+        environment: 'edge-runtime',
+        include: ['**/*.test.ts', '**/*.test.tsx'],
+    },
+})

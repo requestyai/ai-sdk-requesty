@@ -1,128 +1,116 @@
 {
-  "_id": "@requesty/ai-sdk@0.0.8",
-  "_rev": "7-a6c99d7db31e3f830db4d9197b68e546",
-  "name": "@requesty/ai-sdk",
-  "dist-tags": {
-    "latest": "0.0.8"
-  },
-  "versions": [
-    "0.0.1",
-    "0.0.2",
-    "0.0.3",
-    "0.0.4",
-    "0.0.6",
-    "0.0.7",
-    "0.0.8"
-  ],
-  "time": {
-    "created": "2025-04-22T14:38:59.065Z",
-    "modified": "2025-06-10T13:04:43.485Z",
-    "0.0.1": "2025-04-22T14:38:59.362Z",
-    "0.0.2": "2025-04-22T14:46:57.016Z",
-    "0.0.3": "2025-04-22T14:48:42.947Z",
-    "0.0.4": "2025-05-27T21:01:14.166Z",
-    "0.0.6": "2025-06-02T15:44:06.406Z",
-    "0.0.7": "2025-06-06T10:05:17.670Z",
-    "0.0.8": "2025-06-10T13:04:43.321Z"
-  },
-  "bugs": {
-    "url": "https://github.com/requestyai/ai-sdk-requesty/issues"
-  },
-  "license": "Apache-2.0",
-  "homepage": "https://github.com/requestyai/ai-sdk-requesty",
-  "keywords": [
-    "ai"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/requestyai/ai-sdk-requesty.git"
-  },
-  "description": "The [Requesty](https://requesty.ai/) provider for the [AI SDK](https://sdk.vercel.ai/docs) gives access to over 300 large language models through the Requesty chat and completion APIs.",
-  "maintainers": [
-    "thibault00 <thibault@requesty.ai>"
-  ],
-  "readmeFilename": "README.md",
-  "_contentLength": 29270,
-  "version": "0.0.8",
-  "sideEffects": false,
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
-  "scripts": {
-    "build": "tsup",
-    "clean": "rm -rf dist && rm -rf internal/dist",
-    "dev": "tsup --watch",
-    "lint": "eslint \"./**/*.ts*\"",
-    "typecheck": "tsc --noEmit",
-    "stylecheck": "prettier --check \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
-    "format": "prettier --write \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
-    "prepublish": "pnpm run build",
-    "test": "pnpm test:node && pnpm test:edge",
-    "test:edge": "vitest --config vitest.edge.config.ts --run",
-    "test:node": "vitest --config vitest.node.config.ts --run"
-  },
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+    "_id": "@requesty/ai-sdk@0.0.8",
+    "_rev": "7-a6c99d7db31e3f830db4d9197b68e546",
+    "name": "@requesty/ai-sdk",
+    "dist-tags": {
+        "latest": "0.0.8"
     },
-    "./internal": {
-      "types": "./dist/internal/index.d.ts",
-      "import": "./dist/internal/index.mjs",
-      "module": "./dist/internal/index.mjs",
-      "require": "./dist/internal/index.js"
-    }
-  },
-  "dependencies": {
-    "@ai-sdk/provider": "1.0.9",
-    "@ai-sdk/provider-utils": "2.1.10",
-    "@requesty/ai-sdk": "^0.0.7"
-  },
-  "devDependencies": {
-    "@edge-runtime/vm": "5.0.0",
-    "@ianvs/prettier-plugin-sort-imports": "4.4.1",
-    "@types/jest": "29.5.14",
-    "@types/node": "22.13.5",
-    "ai": "^4.1.46",
-    "prettier": "3.5.2",
-    "tsup": "8.4.0",
-    "typescript": "5.7.3",
-    "vitest": "3.0.7",
-    "zod": "3.24.2"
-  },
-  "peerDependencies": {
-    "zod": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
-  "gitHead": "99a1a30ee0575d765a3ef5b7657cb36c3f2f081e",
-  "_nodeVersion": "20.18.1",
-  "_npmVersion": "10.8.2",
-  "dist": {
-    "integrity": "sha512-Yra1JZ/L3WYbcoMDcSQXmJ/aEexLUfwDkZZ+2xAJs5atmS0FTYn1IBsdqPZdSAHBLBNJ/8MShtz1yAw0rQPIEQ==",
-    "shasum": "ab3df41feaaf99e273344479ab18e16dfa9f1d93",
-    "tarball": "https://registry.npmjs.org/@requesty/ai-sdk/-/ai-sdk-0.0.8.tgz",
-    "fileCount": 15,
-    "unpackedSize": 491291,
-    "signatures": [
-      {
-        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
-        "sig": "MEUCIQD5UGpeKCr2jDPjr7D6QlMUvYX93Qmylek6XqrjhBr9VAIgZZu7VGVhj83Zbw25vqON+WxyaEGmKp5t281x4QfPwn8="
-      }
-    ]
-  },
-  "_npmUser": "thibault00 <thibault@requesty.ai>",
-  "directories": {},
-  "_npmOperationalInternal": {
-    "host": "s3://npm-registry-packages-npm-production",
-    "tmp": "tmp/ai-sdk_0.0.8_1749560683128_0.9822057693397086"
-  },
-  "_hasShrinkwrap": false
+    "versions": ["0.0.1", "0.0.2", "0.0.3", "0.0.4", "0.0.6", "0.0.7", "0.0.8"],
+    "time": {
+        "created": "2025-04-22T14:38:59.065Z",
+        "modified": "2025-06-10T13:04:43.485Z",
+        "0.0.1": "2025-04-22T14:38:59.362Z",
+        "0.0.2": "2025-04-22T14:46:57.016Z",
+        "0.0.3": "2025-04-22T14:48:42.947Z",
+        "0.0.4": "2025-05-27T21:01:14.166Z",
+        "0.0.6": "2025-06-02T15:44:06.406Z",
+        "0.0.7": "2025-06-06T10:05:17.670Z",
+        "0.0.8": "2025-06-10T13:04:43.321Z"
+    },
+    "bugs": {
+        "url": "https://github.com/requestyai/ai-sdk-requesty/issues"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://github.com/requestyai/ai-sdk-requesty",
+    "keywords": ["ai"],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/requestyai/ai-sdk-requesty.git"
+    },
+    "description": "The [Requesty](https://requesty.ai/) provider for the [AI SDK](https://sdk.vercel.ai/docs) gives access to over 300 large language models through the Requesty chat and completion APIs.",
+    "maintainers": ["thibault00 <thibault@requesty.ai>"],
+    "readmeFilename": "README.md",
+    "_contentLength": 29270,
+    "version": "0.0.8",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "module": "./dist/index.mjs",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "build": "tsup",
+        "clean": "rm -rf dist && rm -rf internal/dist",
+        "dev": "tsup --watch",
+        "lint": "eslint \"./**/*.ts*\"",
+        "typecheck": "tsc --noEmit",
+        "stylecheck": "prettier --check \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
+        "format": "prettier --write \"**/*.{ts,mts,tsx,md,mdx,mjs}\"",
+        "prepublish": "pnpm run build",
+        "test": "pnpm test:node && pnpm test:edge",
+        "test:edge": "vitest --config vitest.edge.config.ts --run",
+        "test:node": "vitest --config vitest.node.config.ts --run"
+    },
+    "exports": {
+        "./package.json": "./package.json",
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.mjs",
+            "require": "./dist/index.js"
+        },
+        "./internal": {
+            "types": "./dist/internal/index.d.ts",
+            "import": "./dist/internal/index.mjs",
+            "module": "./dist/internal/index.mjs",
+            "require": "./dist/internal/index.js"
+        }
+    },
+    "dependencies": {
+        "@ai-sdk/provider": "1.0.9",
+        "@ai-sdk/provider-utils": "2.1.10",
+        "@requesty/ai-sdk": "^0.0.7"
+    },
+    "devDependencies": {
+        "@edge-runtime/vm": "5.0.0",
+        "@ianvs/prettier-plugin-sort-imports": "4.4.1",
+        "@types/jest": "29.5.14",
+        "@types/node": "22.13.5",
+        "ai": "^4.1.46",
+        "prettier": "3.5.2",
+        "tsup": "8.4.0",
+        "typescript": "5.7.3",
+        "vitest": "3.0.7",
+        "zod": "3.24.2"
+    },
+    "peerDependencies": {
+        "zod": "^3.0.0"
+    },
+    "engines": {
+        "node": ">=18"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
+    "gitHead": "99a1a30ee0575d765a3ef5b7657cb36c3f2f081e",
+    "_nodeVersion": "20.18.1",
+    "_npmVersion": "10.8.2",
+    "dist": {
+        "integrity": "sha512-Yra1JZ/L3WYbcoMDcSQXmJ/aEexLUfwDkZZ+2xAJs5atmS0FTYn1IBsdqPZdSAHBLBNJ/8MShtz1yAw0rQPIEQ==",
+        "shasum": "ab3df41feaaf99e273344479ab18e16dfa9f1d93",
+        "tarball": "https://registry.npmjs.org/@requesty/ai-sdk/-/ai-sdk-0.0.8.tgz",
+        "fileCount": 15,
+        "unpackedSize": 491291,
+        "signatures": [
+            {
+                "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+                "sig": "MEUCIQD5UGpeKCr2jDPjr7D6QlMUvYX93Qmylek6XqrjhBr9VAIgZZu7VGVhj83Zbw25vqON+WxyaEGmKp5t281x4QfPwn8="
+            }
+        ]
+    },
+    "_npmUser": "thibault00 <thibault@requesty.ai>",
+    "directories": {},
+    "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages-npm-production",
+        "tmp": "tmp/ai-sdk_0.0.8_1749560683128_0.9822057693397086"
+    },
+    "_hasShrinkwrap": false
 }
