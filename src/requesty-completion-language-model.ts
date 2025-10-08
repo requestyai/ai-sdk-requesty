@@ -18,7 +18,7 @@ import {
     postJsonToApi,
 } from '@ai-sdk/provider-utils'
 import { z } from 'zod'
-import { convertToRequestyCompletionPrompt } from './convert-to-requesty-completion-prompt'
+import { convertToRequestyCompletionPrompt } from './completions'
 import { mapRequestyFinishReason } from './map-requesty-finish-reason'
 import type {
     RequestyCompletionModelId,
@@ -67,19 +67,16 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
         stopSequences,
         providerOptions,
     }: LanguageModelV2CallOptions) {
-        const extraCallingBody = providerOptions?.['requesty'] ?? {}
+        const extraCallingBody = providerOptions?.requesty ?? {}
 
         return {
-            // model id:
             model: this.modelId,
 
-            // model specific settings:
             logit_bias: this.settings.logitBias,
             logprobs: this.settings.logprobs,
             suffix: this.settings.suffix,
             user: this.settings.user,
 
-            // standardized settings:
             max_tokens: maxOutputTokens,
             temperature,
             top_p: topP,
@@ -91,10 +88,8 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
             response_format: responseFormat,
             top_k: topK,
 
-            // prompt
             prompt: convertToRequestyCompletionPrompt(prompt),
 
-            // extra body:
             ...extraCallingBody,
         }
     }
@@ -130,7 +125,7 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
             fetch: this.config.fetch,
         })
 
-        const { prompt: rawPrompt, ...rawSettings } = args
+        const rawSettings = args
         const choice = response.choices[0]
 
         if (!choice) {
