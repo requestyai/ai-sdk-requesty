@@ -50,9 +50,13 @@ export type RequestyProviderMetadata = {
     }
 }
 
+export type RequestUserObjectContentParts = Array<
+    RequestyTextPart | RequestyImagePart
+>
+
 export interface RequestyChatMessage {
     role: 'system' | 'user' | 'assistant' | 'tool'
-    content: string | null | Array<RequestyTextPart | RequestyImagePart>
+    content: string | null | RequestUserObjectContentParts
     tool_call_id?: string
     tool_calls?: RequestyToolCall[]
     reasoning?: string

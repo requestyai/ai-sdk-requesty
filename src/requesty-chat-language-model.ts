@@ -26,8 +26,8 @@ import {
     postJsonToApi,
 } from '@ai-sdk/provider-utils'
 import { z } from 'zod'
-import { convertToRequestyChatMessages } from './convert-to-requesty-chat-messages'
 import { mapRequestyFinishReason } from './map-requesty-finish-reason'
+import { convertToRequestyChatMessages } from './messages'
 import type {
     RequestyChatModelId,
     RequestyChatSettings,

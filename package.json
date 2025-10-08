@@ -17,7 +17,9 @@
         "format": "biome check --linter-enabled=false --fix",
         "test": "npm run test:node && npm run test:edge",
         "test:edge": "vitest --config vitest.edge.config.ts --run",
-        "test:node": "vitest --config vitest.node.config.ts --run"
+        "test:node": "vitest --config vitest.node.config.ts --run",
+        "test:edge:watch": "vitest --config vitest.edge.config.ts --watch",
+        "test:node:watch": "vitest --config vitest.node.config.ts --watch"
     },
     "exports": {
         "./package.json": "./package.json",
