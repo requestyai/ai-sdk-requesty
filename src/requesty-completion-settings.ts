@@ -1,9 +1,9 @@
-import type { RequestySharedSettings } from './types';
+import type { RequestySharedSettings } from './types'
 
-export type RequestyCompletionModelId = string;
+export type RequestyCompletionModelId = string
 
 export type RequestyCompletionSettings = {
-  /**
+    /**
 Modify the likelihood of specified tokens appearing in the completion.
 
 Accepts a JSON object that maps tokens (specified by their token ID in
@@ -17,9 +17,9 @@ should result in a ban or exclusive selection of the relevant token.
 As an example, you can pass {"50256": -100} to prevent the <|endoftext|>
 token from being generated.
    */
-  logitBias?: Record<number, number>;
+    logitBias?: Record<number, number>
 
-  /**
+    /**
 Return the log probabilities of the tokens. Including logprobs will increase
 the response size and can slow down response times. However, it can
 be useful to better understand how the model is behaving.
@@ -30,10 +30,10 @@ were generated.
 Setting to a number will return the log probabilities of the top n
 tokens that were generated.
    */
-  logprobs?: boolean | number;
+    logprobs?: boolean | number
 
-  /**
+    /**
 The suffix that comes after a completion of inserted text.
    */
-  suffix?: string;
-} & RequestySharedSettings;
+    suffix?: string
+} & RequestySharedSettings
