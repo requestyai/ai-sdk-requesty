@@ -1,6 +1,5 @@
 import { generateText } from 'ai'
-
-import { createRequesty } from './src/requesty-provider'
+import { createRequesty } from '..'
 
 // Create Requesty provider
 const requesty = createRequesty({
