@@ -1,7 +1,6 @@
 import { generateText, streamText, tool } from 'ai'
 import { z } from 'zod'
-
-import { requesty } from './src/index.js'
+import { requesty } from '..'
 
 async function testRealIntegration() {
     const apiKey = process.env.REQUESTY_API_KEY
