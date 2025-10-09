@@ -2,10 +2,10 @@ import type {
     LanguageModelV2Message,
     LanguageModelV2Prompt,
 } from '@ai-sdk/provider'
-import { handleSystemCompletion } from './handle-system-completion'
-import { handleUserCompletion } from './handle-user-completion'
 import { handleAssistantCompletion } from './handle-assistant-completion'
+import { handleSystemCompletion } from './handle-system-completion'
 import { handleToolCompletion } from './handle-tool-completion'
+import { handleUserCompletion } from './handle-user-completion'
 
 function handleMessage(
     message: LanguageModelV2Message,

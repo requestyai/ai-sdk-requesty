@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
     test: {
         environment: 'node',
-        include: ['**/*.test.ts', '**/*.test.tsx'],
-        exclude: ['**/e2e/**', '**/node_modules/**', '**/dist/**'],
+        include: ['**/e2e/**/*.test.ts'],
+        testTimeout: 30000,
     },
 })
