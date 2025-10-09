@@ -208,6 +208,8 @@ export const createTransform = ({
                     })
 
                     if (!fn.arguments) {
+                        toolCalls[index] = currentToolCall
+                        existingToolCalls.set(toolCalls)
                         continue
                     }
                 }
