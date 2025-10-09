@@ -19,7 +19,9 @@
         "test:edge": "vitest --config vitest.edge.config.ts --run",
         "test:node": "vitest --config vitest.node.config.ts --run",
         "test:edge:watch": "vitest --config vitest.edge.config.ts --watch",
-        "test:node:watch": "vitest --config vitest.node.config.ts --watch"
+        "test:node:watch": "vitest --config vitest.node.config.ts --watch",
+        "test:e2e": "vitest --config vitest.e2e.config.ts --run",
+        "test:e2e:watch": "vitest --config vitest.e2e.config.ts --watch"
     },
     "exports": {
         "./package.json": "./package.json",
@@ -45,6 +47,7 @@
         "@types/jest": "29.5.14",
         "@types/node": "22.13.5",
         "ai": "^5.0.52",
+        "dotenv": "^17.2.3",
         "msw": "^2.11.3",
         "tsup": "8.4.0",
         "typescript": "5.7.3",
