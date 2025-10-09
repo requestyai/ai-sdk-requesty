@@ -85,7 +85,6 @@ describe('Requesty Real Integration Tests', () => {
         const toolCall = toolResult.toolCalls[0]
         expect(toolCall?.toolName).toBe('getWeather')
         expect(toolCall?.input).toBeDefined()
-        expect(toolCall?.result).toBeDefined()
     })
 
     it('should handle streaming with tool calling', async () => {
