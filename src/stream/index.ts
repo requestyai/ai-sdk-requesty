@@ -123,7 +123,16 @@ export const createTransform = ({
             requestyUsage.set(newRequestyUsage)
         }
 
-        const delta = value.choices?.[0]?.delta
+        const choice = value.choices?.[0]
+        assertDefined(choice)
+
+        if (choice.finish_reason != null) {
+            finishReason.set(
+                choice.finish_reason as LanguageModelV2FinishReason,
+            )
+        }
+
+        const delta = choice.delta
         assertDefined(delta)
 
         if (delta.content) {
