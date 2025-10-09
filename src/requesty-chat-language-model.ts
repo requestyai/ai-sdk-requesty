@@ -328,7 +328,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     LanguageModelV2StreamPart
                 >({
                     transform(chunk, controller) {
-                        // handle failed chunk parsing / validation:
+                        // handle failed chunk parsing /za validation:
                         if (!chunk.success) {
                             finishReason = 'error'
                             controller.enqueue({
@@ -628,7 +628,23 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
         .optional(),
 })
 
-const RequestyStreamChatCompletionChunkSchema = z.object({
+export const RequestyStreamChatCompletionToolSchema = z
+    .array(
+        z.object({
+            index: z.number(),
+            id: z.string().optional(),
+            type: z.string().optional(),
+            function: z
+                .object({
+                    name: z.string().optional(),
+                    arguments: z.string().optional(),
+                })
+                .optional(),
+        }),
+    )
+    .optional()
+
+export const RequestyStreamChatCompletionChunkSchema = z.object({
     id: z.string().optional(),
     model: z.string().optional(),
     choices: z
@@ -638,21 +654,7 @@ const RequestyStreamChatCompletionChunkSchema = z.object({
                     .object({
                         content: z.string().nullable().optional(),
                         reasoning: z.string().nullable().optional(),
-                        tool_calls: z
-                            .array(
-                                z.object({
-                                    index: z.number(),
-                                    id: z.string().optional(),
-                                    type: z.string().optional(),
-                                    function: z
-                                        .object({
-                                            name: z.string().optional(),
-                                            arguments: z.string().optional(),
-                                        })
-                                        .optional(),
-                                }),
-                            )
-                            .optional(),
+                        tool_calls: RequestyStreamChatCompletionToolSchema,
                     })
                     .optional(),
                 finish_reason: z.string().nullable().optional(),
