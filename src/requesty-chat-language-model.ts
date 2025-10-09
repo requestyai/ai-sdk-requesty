@@ -12,17 +12,13 @@ import type {
     SharedV2Headers,
     SharedV2ProviderMetadata,
 } from '@ai-sdk/provider'
-import {
-    InvalidResponseDataError,
-    UnsupportedFunctionalityError,
-} from '@ai-sdk/provider'
+import { UnsupportedFunctionalityError } from '@ai-sdk/provider'
 import type { ParseResult } from '@ai-sdk/provider-utils'
 import {
     combineHeaders,
     createEventSourceResponseHandler,
     createJsonResponseHandler,
     generateId,
-    isParsableJson,
     postJsonToApi,
 } from '@ai-sdk/provider-utils'
 import { z } from 'zod'
@@ -33,7 +29,7 @@ import type {
     RequestyChatSettings,
 } from './requesty-chat-settings'
 import { requestyFailedResponseHandler } from './requesty-error'
-import type { RequestyUsage } from './types'
+import { createStreamMethods } from './stream'
 
 type RequestyChatConfig = {
     provider: string
@@ -188,7 +184,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             fetch: this.config.fetch,
         })
 
-        const { messages: rawPrompt, ...rawSettings } = args
+        const rawSettings = args
         const choice = response.choices[0]
 
         if (!choice) {
@@ -296,28 +292,9 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             fetch: this.config.fetch,
         })
 
-        const { messages: rawPrompt, ...rawSettings } = args
+        const rawSettings = args
 
-        const toolCalls: Array<{
-            id: string
-            type: 'function'
-            function: {
-                name: string
-                arguments: string
-            }
-            sent: boolean
-        }> = []
-
-        let finishReason: LanguageModelV2FinishReason = 'other'
-        let usage: LanguageModelV2Usage = {
-            inputTokens: 0,
-            outputTokens: 0,
-            totalTokens: 0,
-        }
-
-        const requestyUsage: Partial<RequestyUsage> = {}
-
-        let activeTextId: string | undefined
+        const { transform, flush } = createStreamMethods()
 
         return {
             stream: response.pipeThrough(
@@ -327,258 +304,8 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     >,
                     LanguageModelV2StreamPart
                 >({
-                    transform(chunk, controller) {
-                        // handle failed chunk parsing /za validation:
-                        if (!chunk.success) {
-                            finishReason = 'error'
-                            controller.enqueue({
-                                type: 'error',
-                                error: (chunk as any).error,
-                            })
-                            return
-                        }
-
-                        const value = chunk.value
-
-                        // handle error chunks:
-                        if ('error' in value) {
-                            finishReason = 'error'
-                            controller.enqueue({
-                                type: 'error',
-                                error: value.error,
-                            })
-                            return
-                        }
-
-                        if (value.id) {
-                            controller.enqueue({
-                                type: 'response-metadata',
-                                id: value.id,
-                            })
-                        }
-
-                        if (value.model) {
-                            controller.enqueue({
-                                type: 'response-metadata',
-                                modelId: value.model,
-                            })
-                        }
-
-                        if (value.usage != null) {
-                            usage = {
-                                inputTokens: value.usage.prompt_tokens ?? 0,
-                                outputTokens:
-                                    value.usage.completion_tokens ?? 0,
-                                totalTokens: value.usage.total_tokens ?? 0,
-                            }
-
-                            requestyUsage.cachingTokens =
-                                value.usage.prompt_tokens_details
-                                    ?.caching_tokens ?? 0
-                            requestyUsage.cachedTokens =
-                                value.usage.prompt_tokens_details
-                                    ?.cached_tokens ?? 0
-                        }
-
-                        const choice = value.choices?.[0]
-
-                        if (choice?.finish_reason != null) {
-                            finishReason = mapRequestyFinishReason(
-                                choice.finish_reason,
-                            )
-                        }
-
-                        if (choice?.delta == null) {
-                            return
-                        }
-
-                        const delta = choice.delta
-
-                        if (delta.content != null) {
-                            if (activeTextId == null) {
-                                activeTextId = generateId()
-                                controller.enqueue({
-                                    type: 'text-start',
-                                    id: activeTextId,
-                                })
-                            }
-
-                            controller.enqueue({
-                                type: 'text-delta',
-                                id: activeTextId,
-                                delta: delta.content,
-                            })
-                        }
-
-                        if (delta.reasoning != null) {
-                            controller.enqueue({
-                                type: 'reasoning-delta',
-                                id: generateId(),
-                                delta: delta.reasoning,
-                            })
-                        }
-
-                        if (delta.tool_calls != null) {
-                            for (const toolCallDelta of delta.tool_calls) {
-                                const index = toolCallDelta.index
-
-                                // Tool call start. Requesty returns all information except the arguments in the first chunk.
-                                if (toolCalls[index] == null) {
-                                    if (toolCallDelta.type !== 'function') {
-                                        throw new InvalidResponseDataError({
-                                            data: toolCallDelta,
-                                            message: `Expected 'function' type.`,
-                                        })
-                                    }
-
-                                    if (toolCallDelta.id == null) {
-                                        throw new InvalidResponseDataError({
-                                            data: toolCallDelta,
-                                            message: `Expected 'id' to be a string.`,
-                                        })
-                                    }
-
-                                    if (toolCallDelta.function?.name == null) {
-                                        throw new InvalidResponseDataError({
-                                            data: toolCallDelta,
-                                            message: `Expected 'function.name' to be a string.`,
-                                        })
-                                    }
-
-                                    toolCalls[index] = {
-                                        id: toolCallDelta.id,
-                                        type: 'function',
-                                        function: {
-                                            name: toolCallDelta.function.name,
-                                            arguments:
-                                                toolCallDelta.function
-                                                    .arguments ?? '',
-                                        },
-                                        sent: false,
-                                    }
-
-                                    const toolCall = toolCalls[index]
-
-                                    if (toolCall == null) {
-                                        throw new Error('Tool call is missing')
-                                    }
-
-                                    // check if tool call is complete (some providers send the full tool call in one chunk)
-                                    if (
-                                        toolCall.function?.name != null &&
-                                        toolCall.function?.arguments != null &&
-                                        isParsableJson(
-                                            toolCall.function.arguments,
-                                        )
-                                    ) {
-                                        // send delta
-                                        controller.enqueue({
-                                            type: 'tool-input-delta',
-                                            id: toolCall.id,
-                                            delta: toolCall.function.arguments,
-                                        })
-
-                                        // send tool call
-                                        controller.enqueue({
-                                            type: 'tool-call',
-                                            toolCallId: toolCall.id,
-                                            toolName: toolCall.function.name,
-                                            input: toolCall.function.arguments, // Keep as string
-                                        })
-
-                                        toolCall.sent = true
-                                    }
-
-                                    continue
-                                }
-
-                                // existing tool call, merge
-                                const toolCall = toolCalls[index]
-
-                                if (toolCall == null) {
-                                    throw new Error('Tool call is missing')
-                                }
-
-                                if (toolCallDelta.function?.arguments != null) {
-                                    toolCall.function!.arguments +=
-                                        toolCallDelta.function?.arguments ?? ''
-                                }
-
-                                // send delta
-                                controller.enqueue({
-                                    type: 'tool-input-delta',
-                                    id: toolCall.id,
-                                    delta:
-                                        toolCallDelta.function?.arguments ?? '',
-                                })
-
-                                // check if tool call is complete
-                                if (
-                                    toolCall.function?.name != null &&
-                                    toolCall.function?.arguments != null &&
-                                    isParsableJson(toolCall.function.arguments)
-                                ) {
-                                    controller.enqueue({
-                                        type: 'tool-call',
-                                        toolCallId: toolCall.id,
-                                        toolName: toolCall.function.name,
-                                        input: toolCall.function.arguments,
-                                    })
-
-                                    toolCall.sent = true
-                                }
-                            }
-                        }
-                    },
-
-                    flush(controller) {
-                        if (activeTextId != null) {
-                            controller.enqueue({
-                                type: 'text-end',
-                                id: activeTextId,
-                            })
-                            activeTextId = undefined
-                        }
-
-                        // Forward any unsent tool calls if finish reason is 'tool-calls'
-                        if (finishReason === 'tool-calls') {
-                            for (const toolCall of toolCalls) {
-                                if (!toolCall.sent) {
-                                    controller.enqueue({
-                                        type: 'tool-call',
-                                        toolCallId: toolCall.id,
-                                        toolName: toolCall.function.name,
-                                        input:
-                                            toolCall.function.arguments || '{}',
-                                    })
-                                    toolCall.sent = true
-                                }
-                            }
-                        }
-
-                        // Prepare provider metadata with Requesty usage information
-                        const providerMetadata: SharedV2ProviderMetadata = {
-                            requesty: {
-                                usage:
-                                    requestyUsage.cachedTokens !== undefined &&
-                                    requestyUsage.cachingTokens !== undefined
-                                        ? (requestyUsage as any)
-                                        : undefined,
-                            },
-                        }
-
-                        const hasProviderMetadata =
-                            providerMetadata.requesty?.usage !== undefined
-
-                        controller.enqueue({
-                            type: 'finish',
-                            finishReason,
-                            usage,
-                            ...(hasProviderMetadata
-                                ? { providerMetadata }
-                                : {}),
-                        })
-                    },
+                    transform,
+                    flush,
                 }),
             ),
             request: { body: rawSettings },
