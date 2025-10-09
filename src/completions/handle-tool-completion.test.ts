@@ -148,8 +148,8 @@ describe('handleToolCompletion', () => {
                             {
                                 type: 'media',
                                 mediaType: 'image/png',
-                                data: new Uint8Array([1, 2, 3]),
-                            } as any,
+                                data: 'AQID',
+                            },
                         ],
                     },
                 },
@@ -173,7 +173,7 @@ describe('handleToolCompletion', () => {
                             {
                                 type: 'media',
                                 mediaType: 'image/jpeg',
-                                data: new Uint8Array([255, 216, 255]),
+                                data: '/9j/',
                             },
                         ],
                     },
