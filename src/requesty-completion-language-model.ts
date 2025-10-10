@@ -18,6 +18,7 @@ import {
     postJsonToApi,
 } from '@ai-sdk/provider-utils'
 import { z } from 'zod'
+import { collectAnalyticsMetadata } from './collect-analytics'
 import { convertToRequestyCompletionPrompt } from './completions'
 import { mapRequestyFinishReason } from './map-requesty-finish-reason'
 import type {
@@ -66,8 +67,27 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
         topK,
         stopSequences,
         providerOptions,
+        headers,
     }: LanguageModelV2CallOptions) {
-        const extraCallingBody = providerOptions?.requesty ?? {}
+        // Extract requesty metadata from providerOptions
+        const requestyMetadata = providerOptions?.['requesty'] ?? {}
+        let extraCallingBody: Record<string, any> = {}
+
+        // Handle analytics: automatically collect system metadata
+        if (requestyMetadata.analytics === true) {
+            const analyticsData = collectAnalyticsMetadata(headers)
+
+            // Merge analytics into extra field (don't overwrite user's extra data)
+            extraCallingBody = {
+                ...requestyMetadata,
+                extra: {
+                    ...analyticsData,
+                    ...(requestyMetadata.extra as Record<string, unknown> || {}),
+                }
+            }
+        } else {
+            extraCallingBody = requestyMetadata
+        }
 
         return {
             model: this.modelId,
