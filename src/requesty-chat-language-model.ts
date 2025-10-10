@@ -22,6 +22,7 @@ import {
     postJsonToApi,
 } from '@ai-sdk/provider-utils'
 import { z } from 'zod'
+import { collectAnalyticsMetadata } from './collect-analytics'
 import { mapRequestyFinishReason } from './map-requesty-finish-reason'
 import { convertToRequestyChatMessages } from './messages'
 import type {
@@ -79,8 +80,22 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         const requestyMetadata = providerOptions?.['requesty'] ?? {}
         const extraCallingBody: Record<string, any> = {}
 
-        // If there's requesty metadata, add it as a root-level 'requesty' field
-        if (Object.keys(requestyMetadata).length > 0) {
+        // Handle analytics: automatically collect system metadata
+        if (requestyMetadata.analytics === true) {
+            const analyticsData = collectAnalyticsMetadata()
+
+            // Merge analytics into extra field (don't overwrite user's extra data)
+            const updatedMetadata = {
+                ...requestyMetadata,
+                extra: {
+                    ...analyticsData,
+                    ...(requestyMetadata.extra as Record<string, unknown> || {}),
+                }
+            }
+
+            extraCallingBody.requesty = updatedMetadata
+        } else if (Object.keys(requestyMetadata).length > 0) {
+            // No analytics, just pass through requesty metadata
             extraCallingBody.requesty = requestyMetadata
         }
 
