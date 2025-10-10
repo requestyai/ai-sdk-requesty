@@ -19,10 +19,6 @@ export function collectAnalyticsMetadata(
         Object.assign(analytics, cachedSystemInfo)
     }
 
-    // Always collect call context (changes per call)
-    const callContext = collectCallContext()
-    Object.assign(analytics, callContext)
-
     // Collect per-request runtime info
     const runtimeInfo = collectRuntimeInfo(headers)
     Object.assign(analytics, runtimeInfo)
@@ -117,49 +113,6 @@ function collectSystemInfo(): Record<string, string> {
         // If anything fails, return empty object
         return {}
     }
-}
-
-function collectCallContext(): Record<string, string> {
-    const callContext: Record<string, string> = {}
-
-    try {
-        const stack = new Error().stack
-        if (stack) {
-            const lines = stack.split('\n')
-            // Find first line that's not in this file or provider files
-            for (let i = 2; i < Math.min(lines.length, 10); i++) {
-                const line = lines[i]
-                if (
-                    line &&
-                    !line.includes('collect-analytics') &&
-                    !line.includes('requesty-chat-language-model') &&
-                    !line.includes('requesty-completion-language-model') &&
-                    !line.includes('node_modules')
-                ) {
-                    // Extract function name if available
-                    const functionMatch = line.match(/at\s+(\w+)/)
-                    if (functionMatch?.[1]) {
-                        callContext['call.function'] = functionMatch[1]
-                    }
-
-                    // Extract file path
-                    const fileMatch = line.match(/\((.+):(\d+):(\d+)\)/)
-                    if (fileMatch?.[1]) {
-                        const filePath = fileMatch[1]
-                        // Get just the filename, not full path
-                        const fileName = filePath.split('/').pop() || filePath
-                        callContext['call.file'] = fileName
-                        callContext['call.line'] = fileMatch[2]
-                    }
-                    break
-                }
-            }
-        }
-    } catch {
-        // Stack trace parsing failed, skip
-    }
-
-    return callContext
 }
 
 function collectRuntimeInfo(
