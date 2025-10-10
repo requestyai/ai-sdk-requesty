@@ -96,7 +96,7 @@ export function createRequesty(
 ): RequestyProvider {
     const baseURL =
         withoutTrailingSlash(options.baseURL ?? options.baseUrl) ??
-        'http://localhost:40000/v1'
+        'https://router.requesty.ai/v1'
 
     // we default to compatible, because strict breaks providers like Groq:
     const compatibility = options.compatibility ?? 'compatible'
