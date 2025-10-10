@@ -1,5 +1,7 @@
 # Requesty Provider for AI SDK v5
 
+![NPM Version](https://img.shields.io/npm/v/%40requesty%2Fai-sdk) ![NPM Downloads](https://img.shields.io/npm/dm/%40requesty%2Fai-sdk) 
+
 The [Requesty](https://requesty.ai/) provider for the [AI SDK v5](https://sdk.vercel.ai/docs) gives access to over 300 large language models through the Requesty chat and completion APIs.
 
 ## 🚀 AI SDK v5 Support
