@@ -67,6 +67,7 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
         topK,
         stopSequences,
         providerOptions,
+        headers,
     }: LanguageModelV2CallOptions) {
         // Extract requesty metadata from providerOptions
         const requestyMetadata = providerOptions?.['requesty'] ?? {}
@@ -74,7 +75,7 @@ export class RequestyCompletionLanguageModel implements LanguageModelV2 {
 
         // Handle analytics: automatically collect system metadata
         if (requestyMetadata.analytics === true) {
-            const analyticsData = collectAnalyticsMetadata()
+            const analyticsData = collectAnalyticsMetadata(headers)
 
             // Merge analytics into extra field (don't overwrite user's extra data)
             extraCallingBody = {

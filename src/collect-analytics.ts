@@ -6,7 +6,9 @@
 
 let cachedSystemInfo: Record<string, string> | null = null
 
-export function collectAnalyticsMetadata(): Record<string, string> {
+export function collectAnalyticsMetadata(
+    headers?: Record<string, string | undefined>,
+): Record<string, string> {
     const analytics: Record<string, string> = {}
 
     // Use cached system info (doesn't change during runtime)
@@ -20,6 +22,10 @@ export function collectAnalyticsMetadata(): Record<string, string> {
     // Always collect call context (changes per call)
     const callContext = collectCallContext()
     Object.assign(analytics, callContext)
+
+    // Collect per-request runtime info
+    const runtimeInfo = collectRuntimeInfo(headers)
+    Object.assign(analytics, runtimeInfo)
 
     return analytics
 }
@@ -154,4 +160,44 @@ function collectCallContext(): Record<string, string> {
     }
 
     return callContext
+}
+
+function collectRuntimeInfo(
+    headers?: Record<string, string | undefined>,
+): Record<string, string> {
+    const runtimeInfo: Record<string, string> = {}
+
+    try {
+        if (typeof process !== 'undefined') {
+            // Memory usage (in MB)
+            const mem = process.memoryUsage()
+            runtimeInfo['memory.heapUsed'] = (mem.heapUsed / 1024 / 1024).toFixed(
+                2,
+            )
+            runtimeInfo['memory.heapTotal'] = (
+                mem.heapTotal /
+                1024 /
+                1024
+            ).toFixed(2)
+            runtimeInfo['memory.rss'] = (mem.rss / 1024 / 1024).toFixed(2)
+
+            // Process uptime (in seconds)
+            runtimeInfo['process.uptime'] = process.uptime().toFixed(2)
+        }
+
+        // Extract user-agent from headers
+        if (headers) {
+            const userAgent =
+                headers['user-agent'] ||
+                headers['User-Agent'] ||
+                headers['USER-AGENT']
+            if (userAgent) {
+                runtimeInfo['request.userAgent'] = userAgent
+            }
+        }
+    } catch {
+        // Failed to collect runtime info
+    }
+
+    return runtimeInfo
 }

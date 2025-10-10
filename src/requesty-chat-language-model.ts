@@ -75,6 +75,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         tools,
         toolChoice,
         providerOptions,
+        headers,
     }: LanguageModelV2CallOptions) {
         // Extract requesty metadata from providerOptions and put it at root level
         const requestyMetadata = providerOptions?.['requesty'] ?? {}
@@ -82,7 +83,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
         // Handle analytics: automatically collect system metadata
         if (requestyMetadata.analytics === true) {
-            const analyticsData = collectAnalyticsMetadata()
+            const analyticsData = collectAnalyticsMetadata(headers)
 
             // Merge analytics into extra field (don't overwrite user's extra data)
             const updatedMetadata = {

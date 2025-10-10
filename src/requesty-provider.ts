@@ -96,7 +96,7 @@ export function createRequesty(
 ): RequestyProvider {
     const baseURL =
         withoutTrailingSlash(options.baseURL ?? options.baseUrl) ??
-        'https://router.requesty.ai/v1'
+        'http://localhost:40000/v1'
 
     // we default to compatible, because strict breaks providers like Groq:
     const compatibility = options.compatibility ?? 'compatible'
@@ -145,7 +145,7 @@ export function createRequesty(
             )
         }
 
-        if (modelId === 'openai/gpt-3.5-turbo-instruct') {
+        if (modelId === 'openai/gpt-4o') {
             return createCompletionModel(
                 modelId,
                 settings as RequestyCompletionSettings,
