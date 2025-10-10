@@ -93,19 +93,14 @@ function collectSystemInfo(): Record<string, string> {
         }
 
         // Requesty provider version
-        systemInfo['requesty.provider.name'] = '@requesty/ai-sdk'
-        systemInfo['requesty.provider.version'] = '2.0.0'
-
-        // Check if OpenTelemetry is active
         try {
             // biome-ignore lint: Dynamic require for optional dependency
-            const { trace } = require('@opentelemetry/api')
-            const activeSpan = trace.getActiveSpan()
-            systemInfo['telemetry.enabled'] = String(
-                activeSpan?.isRecording() || false,
-            )
+            const requestyPackage = require('../package.json')
+            systemInfo['requesty.provider.name'] = requestyPackage.name
+            systemInfo['requesty.provider.version'] = requestyPackage.version
         } catch {
-            systemInfo['telemetry.enabled'] = 'false'
+            // Fallback if package.json not accessible
+            systemInfo['requesty.provider.name'] = '@requesty/ai-sdk'
         }
 
         return systemInfo
