@@ -1,24 +1,25 @@
 /**
  * Collects system and runtime analytics metadata when analytics is enabled.
  * This data is automatically added to the request without user configuration.
+ * All values are converted to strings to match Requesty backend requirements.
  */
 
-let cachedAnalytics: Record<string, unknown> | null = null
+let cachedAnalytics: Record<string, string> | null = null
 
-export function collectAnalyticsMetadata(): Record<string, unknown> {
+export function collectAnalyticsMetadata(): Record<string, string> {
     // Cache the metadata since it doesn't change during runtime
     if (cachedAnalytics) {
         return cachedAnalytics
     }
 
-    const analytics: Record<string, unknown> = {}
+    const analytics: Record<string, string> = {}
 
     try {
         // Node.js runtime info
         if (typeof process !== 'undefined') {
             analytics['process.runtime.name'] = 'nodejs'
             analytics['process.runtime.version'] = process.version
-            analytics['process.pid'] = process.pid
+            analytics['process.pid'] = String(process.pid)
             analytics['host.arch'] = process.arch
             analytics['host.platform'] = process.platform
 
@@ -85,10 +86,11 @@ export function collectAnalyticsMetadata(): Record<string, unknown> {
             // biome-ignore lint: Dynamic require for optional dependency
             const { trace } = require('@opentelemetry/api')
             const activeSpan = trace.getActiveSpan()
-            analytics['telemetry.enabled'] =
-                activeSpan?.isRecording() || false
+            analytics['telemetry.enabled'] = String(
+                activeSpan?.isRecording() || false,
+            )
         } catch {
-            analytics['telemetry.enabled'] = false
+            analytics['telemetry.enabled'] = 'false'
         }
 
         cachedAnalytics = analytics
