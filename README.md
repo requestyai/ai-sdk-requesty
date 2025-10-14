@@ -185,6 +185,41 @@ const { text } = await generateText({
 - **`user_id`**: Track requests by user
 - **`trace_id`**: Connect related requests in workflows
 - **`extra`**: Custom business context (any key-value pairs)
+- **`analytics`**: Enable automatic collection of system and runtime metrics
+
+### Automatic Analytics Collection
+
+Enable `analytics: true` to automatically collect system and runtime information with each request:
+
+```ts
+const { text } = await generateText({
+  model: requesty.chat('openai/gpt-4o'),
+  prompt: 'Write a blog post',
+  providerOptions: {
+    requesty: {
+      analytics: true, // ✨ Enable automatic collection
+      tags: ['content-generation'],
+      user_id: 'user-123',
+      extra: {
+        // Your custom data
+        content_type: 'blog',
+        priority: 'high',
+        // Analytics data is automatically merged here!
+      },
+    },
+  },
+});
+```
+
+**Automatically collected metrics:**
+
+- **System Info**: Node.js version, PID, architecture, platform, hostname
+- **Environment**: Deployment platform (Vercel, AWS Lambda, etc.), environment name
+- **Runtime**: Memory usage (heap, RSS), process uptime
+- **SDK Versions**: AI SDK version, Requesty provider version
+- **Request Context**: User-agent (if available)
+
+All analytics data is automatically merged into the `extra` field. Your custom `extra` values take precedence over auto-collected data.
 
 ## Provider Configuration
 

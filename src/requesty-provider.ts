@@ -145,7 +145,7 @@ export function createRequesty(
             )
         }
 
-        if (modelId === 'openai/gpt-3.5-turbo-instruct') {
+        if (modelId === 'openai/gpt-4o') {
             return createCompletionModel(
                 modelId,
                 settings as RequestyCompletionSettings,
