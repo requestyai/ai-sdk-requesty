@@ -38,7 +38,9 @@ const systemPrompt = `You are an expert pizza maker managing a busy pizzeria. Yo
 6. Check ingredient availability before accepting orders
 7. Calculate pricing based on size and toppings
 
-Always be friendly and professional. When orders cannot be fulfilled due to inventory, suggest alternatives.`
+Always be friendly and professional. When orders cannot be fulfilled due to inventory, suggest alternatives.
+
+Always prefer to do tool calls, even if the requirements are not completely clear.`
 
 const tools = {
     checkInventory: tool({
@@ -277,7 +279,7 @@ const tools = {
         description: 'Restock a specific ingredient',
         inputSchema: z.object({
             ingredient: z.string().describe('The ingredient to restock'),
-            quantity: z.number().positive().describe('Amount to add'),
+            quantity: z.number().min(1).describe('Amount to add'),
         }),
         execute: async ({ ingredient, quantity }) => {
             const normalizedIngredient = ingredient
@@ -422,7 +424,6 @@ const testGenerateAgent = async <T extends ToolSet>(
         prompt,
     })
 
-    expect(steps.length).toBeGreaterThan(0)
     expect(steps.some((s) => s.toolCalls.length > 0)).toBeTruthy()
 }
 
