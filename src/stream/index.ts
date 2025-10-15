@@ -15,7 +15,7 @@ import type {
     RequestyStreamChatCompletionToolSchema,
 } from '../requesty-chat-language-model'
 import type { RequestyUsage } from '../types'
-import { assert, assertDefined } from '../util'
+import { assertDefined } from '../util'
 
 type ChunkType = z.infer<typeof RequestyStreamChatCompletionChunkSchema>
 type Chunk = ParseResult<ChunkType>
@@ -193,11 +193,6 @@ export const createTransform = ({
                     assertDefined(
                         fn.name,
                         'new tool call should have a defined name',
-                    )
-
-                    assert(
-                        toolCallDelta.type === 'function',
-                        "Expected 'function' type",
                     )
 
                     currentToolCall = {

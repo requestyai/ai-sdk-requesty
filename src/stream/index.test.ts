@@ -489,54 +489,57 @@ describe('stream', () => {
     })
 
     describe('tool calls', () => {
-        it('validates tool call type is function', () => {
-            const finishReason = { get: vi.fn(), set: vi.fn() }
-            const usage = { get: vi.fn(), set: vi.fn() }
-            const requestyUsage = { get: vi.fn(), set: vi.fn() }
-            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
-            const reasoningId = { get: vi.fn(), set: vi.fn() }
-            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+        it.for([['invalid'], ['function'], [undefined], [null]])(
+            'works with tool call type: %s',
+            (a) => {
+                const finishReason = { get: vi.fn(), set: vi.fn() }
+                const usage = { get: vi.fn(), set: vi.fn() }
+                const requestyUsage = { get: vi.fn(), set: vi.fn() }
+                const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+                const reasoningId = { get: vi.fn(), set: vi.fn() }
+                const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
 
-            const transform = createTransform({
-                finishReason,
-                usage,
-                requestyUsage,
-                activeId,
-                reasoningId,
-                existingToolCalls,
-            })
+                const transform = createTransform({
+                    finishReason,
+                    usage,
+                    requestyUsage,
+                    activeId,
+                    reasoningId,
+                    existingToolCalls,
+                })
 
-            const controller = {
-                enqueue: vi.fn(),
-            } as any
+                const controller = {
+                    enqueue: vi.fn(),
+                } as any
 
-            expect(() =>
-                transform(
-                    {
-                        success: true,
-                        value: {
-                            choices: [
-                                {
-                                    delta: {
-                                        tool_calls: [
-                                            {
-                                                index: 0,
-                                                id: 'call_123',
-                                                type: 'invalid',
-                                                function: {
-                                                    name: 'get_weather',
+                expect(() =>
+                    transform(
+                        {
+                            success: true,
+                            value: {
+                                choices: [
+                                    {
+                                        delta: {
+                                            tool_calls: [
+                                                {
+                                                    index: 0,
+                                                    id: 'call_123',
+                                                    type: a,
+                                                    function: {
+                                                        name: 'get_weather',
+                                                    },
                                                 },
-                                            },
-                                        ],
+                                            ],
+                                        },
                                     },
-                                },
-                            ],
-                        },
-                    } as any,
-                    controller,
-                ),
-            ).toThrow("Expected 'function' type")
-        })
+                                ],
+                            },
+                        } as any,
+                        controller,
+                    ),
+                ).not.toThrow()
+            },
+        )
 
         it('validates tool call has id', () => {
             const finishReason = { get: vi.fn(), set: vi.fn() }
