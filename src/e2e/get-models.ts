@@ -14,6 +14,7 @@ const DEFAULT_TEST_MODELS: TestModel[] = [
     { id: 'anthropic/claude-sonnet-4-5-20250929', name: 'Claude 4.5 Sonnet' },
     { id: 'mistral/mistral-medium-latest', name: 'Mistral Medium' },
     { id: 'openai/gpt-4.1', name: 'OpenAI GPT 4.1' },
+    { id: 'google/gemini-2.5-flash', name: 'Google Gemini 2.5 Flash' },
 ]
 
 export function getTestModels(): TestModel[] {
