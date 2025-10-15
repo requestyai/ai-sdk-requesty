@@ -124,7 +124,9 @@ export const createTransform = ({
         }
 
         const choice = value.choices?.[0]
-        assertDefined(choice)
+        if (choice == null) {
+            return
+        }
 
         if (choice.finish_reason != null) {
             finishReason.set(
