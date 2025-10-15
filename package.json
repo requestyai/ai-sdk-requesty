@@ -21,7 +21,9 @@
         "test:edge:watch": "vitest --config vitest.edge.config.ts --watch",
         "test:node:watch": "vitest --config vitest.node.config.ts --watch",
         "test:e2e": "vitest --config vitest.e2e.config.ts --run",
-        "test:e2e:watch": "vitest --config vitest.e2e.config.ts --watch"
+        "test:e2e:watch": "vitest --config vitest.e2e.config.ts --watch",
+        "test:pizza": "vitest --config vitest.e2e.config.ts --run src/e2e/pizza.test.ts",
+        "test:pizza:watch": "vitest --config vitest.e2e.config.ts --watch src/e2e/pizza.test.ts"
     },
     "exports": {
         "./package.json": "./package.json",
