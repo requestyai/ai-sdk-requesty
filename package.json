@@ -16,6 +16,7 @@
         "stylecheck": "biome check --linter-enabled=false",
         "format": "biome check --linter-enabled=false --fix",
         "test": "npm run test:node && npm run test:edge",
+        "test:all": "npm run test && npm run test:e2e",
         "test:edge": "vitest --config vitest.edge.config.ts --run",
         "test:node": "vitest --config vitest.node.config.ts --run",
         "test:edge:watch": "vitest --config vitest.edge.config.ts --watch",
