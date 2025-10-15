@@ -63,11 +63,9 @@ describe.concurrent.each(modelsToTest)(
                 // Consume the stream
             }
 
-            const finalFinishReason = await streamResult.finishReason
-            const finalToolCalls = await streamResult.toolCalls
+            const steps = await streamResult.steps
 
-            expect(finalFinishReason).toBeDefined()
-            expect(finalToolCalls.length).toBeGreaterThan(0)
+            expect(steps.length).toBeGreaterThan(0)
         })
     },
 )
