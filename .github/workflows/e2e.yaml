@@ -1,0 +1,25 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+      - uses: pnpm/action-setup@v4
+      - run: pnpm install
+      - name: Create .env file
+        run: |
+          cat > src/e2e/.env << EOF
+          REQUESTY_API_KEY=${{ secrets.REQUESTY_API_KEY }}
+          REQUESTY_BASE_URL=${{ vars.REQUESTY_BASE_URL }}
+          TEST_MODELS=${{ vars.TEST_MODELS }}
+          EOF
+      - run: pnpm test:e2e
