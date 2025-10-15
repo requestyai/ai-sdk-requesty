@@ -486,6 +486,40 @@ describe('stream', () => {
                 cachingTokens: 0,
             })
         })
+
+        it('handles empty choices array', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            expect(() =>
+                transform(
+                    {
+                        success: true,
+                        value: {
+                            choices: [],
+                        },
+                    } as any,
+                    controller,
+                ),
+            ).not.toThrow()
+        })
     })
 
     describe('tool calls', () => {
