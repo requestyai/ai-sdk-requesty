@@ -32,8 +32,11 @@ jobs:
         with:
           node-version: "24.x"
           registry-url: https://registry.npmjs.org/
+      - uses: pnpm/action-setup@v4
       - run: pnpm install
+      - name: Build package
       - run: pnpm run build
+      - name: Publish package
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
