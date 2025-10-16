@@ -8,9 +8,9 @@
     "types": "./dist/index.d.ts",
     "files": ["dist/**/*"],
     "scripts": {
-        "build": "tsup",
+        "build": "tsdown",
         "clean": "rm -rf dist && rm -rf internal/dist",
-        "dev": "tsup --watch",
+        "dev": "tsdown --watch",
         "lint": "biome lint",
         "typecheck": "tsc --noEmit",
         "stylecheck": "biome check --linter-enabled=false",
@@ -52,7 +52,7 @@
         "ai": "^5.0.52",
         "dotenv": "^17.2.3",
         "msw": "^2.11.3",
-        "tsup": "8.4.0",
+        "tsdown": "^0.15.7",
         "typescript": "5.7.3",
         "vitest": "3.0.7",
         "zod": "^4.1.11"
