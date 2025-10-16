@@ -35,8 +35,8 @@ jobs:
       - uses: pnpm/action-setup@v4
       - run: pnpm install
       - name: Build package
-      - run: pnpm run build
+        run: pnpm run build
       - name: Publish package
-      - run: npm publish
+        run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_ACCESS_TOKEN}}
