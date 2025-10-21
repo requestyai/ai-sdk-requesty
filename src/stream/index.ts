@@ -10,6 +10,7 @@ import {
     type ParseResult,
 } from '@ai-sdk/provider-utils'
 import type { z } from 'zod'
+import { mapRequestyFinishReason } from '../map-requesty-finish-reason'
 import type {
     RequestyStreamChatCompletionChunkSchema,
     RequestyStreamChatCompletionToolSchema,
@@ -129,9 +130,7 @@ export const createTransform = ({
         }
 
         if (choice.finish_reason != null) {
-            finishReason.set(
-                choice.finish_reason as LanguageModelV2FinishReason,
-            )
+            finishReason.set(mapRequestyFinishReason(choice.finish_reason))
         }
 
         const delta = choice.delta
