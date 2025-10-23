@@ -520,6 +520,356 @@ describe('stream', () => {
                 ),
             ).not.toThrow()
         })
+
+        it('maps finish_reason "stop" to "stop"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'stop',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('stop')
+        })
+
+        it('maps finish_reason "length" to "length"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'length',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('length')
+        })
+
+        it('maps finish_reason "max_tokens" to "length"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'max_tokens',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('length')
+        })
+
+        it('maps finish_reason "tool_calls" to "tool-calls"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'tool_calls',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('tool-calls')
+        })
+
+        it('maps finish_reason "function_call" to "tool-calls"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'function_call',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('tool-calls')
+        })
+
+        it('maps finish_reason "content_filter" to "content-filter"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'content_filter',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('content-filter')
+        })
+
+        it('maps unknown finish_reason to "unknown"', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: 'some_unknown_reason',
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).toHaveBeenCalledWith('unknown')
+        })
+
+        it('does not set finish_reason when it is null', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                finish_reason: null,
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).not.toHaveBeenCalled()
+        })
+
+        it('does not set finish_reason when it is undefined', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const controller = {
+                enqueue: vi.fn(),
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                delta: {},
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            expect(finishReason.set).not.toHaveBeenCalled()
+        })
     })
 
     describe('tool calls', () => {
