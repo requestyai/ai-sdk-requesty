@@ -1,6 +1,6 @@
 import type {
-    LanguageModelV2Message,
-    LanguageModelV2Prompt,
+    LanguageModelV3Message,
+    LanguageModelV3Prompt,
 } from '@ai-sdk/provider'
 import type { RequestyChatMessage, RequestyChatPrompt } from '../types'
 import { handleAssistantMessage } from './handle-assistant-message'
@@ -9,7 +9,7 @@ import { handleToolMessage } from './handle-tool-message'
 import { handleUserMessage } from './handle-user-message'
 
 function handleMessage(
-    message: LanguageModelV2Message,
+    message: LanguageModelV3Message,
 ): Array<RequestyChatMessage> {
     switch (message.role) {
         case 'system':
@@ -24,7 +24,7 @@ function handleMessage(
 }
 
 export function convertToRequestyChatMessages(
-    prompt: LanguageModelV2Prompt,
+    prompt: LanguageModelV3Prompt,
 ): RequestyChatPrompt {
     return prompt.flatMap(handleMessage)
 }

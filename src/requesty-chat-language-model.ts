@@ -1,16 +1,16 @@
 import type {
-    LanguageModelV2,
-    LanguageModelV2CallOptions,
-    LanguageModelV2CallWarning,
-    LanguageModelV2Content,
-    LanguageModelV2FinishReason,
-    LanguageModelV2FunctionTool,
-    LanguageModelV2ProviderDefinedTool,
-    LanguageModelV2ResponseMetadata,
-    LanguageModelV2StreamPart,
-    LanguageModelV2Usage,
-    SharedV2Headers,
-    SharedV2ProviderMetadata,
+    LanguageModelV3,
+    LanguageModelV3CallOptions,
+    LanguageModelV3CallWarning,
+    LanguageModelV3Content,
+    LanguageModelV3FinishReason,
+    LanguageModelV3FunctionTool,
+    LanguageModelV3ProviderDefinedTool,
+    LanguageModelV3ResponseMetadata,
+    LanguageModelV3StreamPart,
+    LanguageModelV3Usage,
+    SharedV3Headers,
+    SharedV3ProviderMetadata,
 } from '@ai-sdk/provider'
 import { UnsupportedFunctionalityError } from '@ai-sdk/provider'
 import type { ParseResult } from '@ai-sdk/provider-utils'
@@ -43,8 +43,8 @@ type RequestyChatConfig = {
 
 const URL_REGEX = /^https?:\/\/.*$/
 
-export class RequestyChatLanguageModel implements LanguageModelV2 {
-    readonly specificationVersion = 'v2'
+export class RequestyChatLanguageModel implements LanguageModelV3 {
+    readonly specificationVersion = 'v3'
     readonly provider: string
     readonly modelId: RequestyChatModelId
 
@@ -85,7 +85,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         tools,
         toolChoice,
         providerOptions,
-    }: LanguageModelV2CallOptions) {
+    }: LanguageModelV3CallOptions) {
         // Extract requesty metadata from providerOptions and put it at root level
         const requestyMetadata = providerOptions?.['requesty'] ?? {}
         const extraCallingBody: Record<string, any> = {}
@@ -104,17 +104,17 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             logit_bias: this.settings.logitBias,
             logprobs:
                 this.settings.logprobs === true ||
-                typeof this.settings.logprobs === 'number'
+                    typeof this.settings.logprobs === 'number'
                     ? true
                     : undefined,
             top_logprobs:
                 typeof this.settings.logprobs === 'number'
                     ? this.settings.logprobs
                     : typeof this.settings.logprobs === 'boolean'
-                      ? this.settings.logprobs
-                          ? 0
-                          : undefined
-                      : undefined,
+                        ? this.settings.logprobs
+                            ? 0
+                            : undefined
+                        : undefined,
             user: this.settings.user,
             parallel_tool_calls: this.settings.parallelToolCalls,
 
@@ -164,19 +164,19 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         return baseArgs
     }
 
-    async doGenerate(options: LanguageModelV2CallOptions): Promise<{
-        content: Array<LanguageModelV2Content>
-        finishReason: LanguageModelV2FinishReason
-        usage: LanguageModelV2Usage
-        providerMetadata?: SharedV2ProviderMetadata
+    async doGenerate(options: LanguageModelV3CallOptions): Promise<{
+        content: Array<LanguageModelV3Content>
+        finishReason: LanguageModelV3FinishReason
+        usage: LanguageModelV3Usage
+        providerMetadata?: SharedV3ProviderMetadata
         request?: {
             body?: unknown
         }
-        response?: LanguageModelV2ResponseMetadata & {
-            headers?: SharedV2Headers
+        response?: LanguageModelV3ResponseMetadata & {
+            headers?: SharedV3Headers
             body?: unknown
         }
-        warnings: Array<LanguageModelV2CallWarning>
+        warnings: Array<LanguageModelV3CallWarning>
     }> {
         const args = this.getArgs(options)
 
@@ -204,21 +204,21 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
 
         const providerMetadata = response.usage?.prompt_tokens_details
             ? ({
-                  requesty: {
-                      usage: {
-                          cachingTokens:
-                              response.usage.prompt_tokens_details
-                                  .caching_tokens ?? 0,
-                          cachedTokens:
-                              response.usage.prompt_tokens_details
-                                  .cached_tokens ?? 0,
-                      },
-                  },
-              } satisfies SharedV2ProviderMetadata)
+                requesty: {
+                    usage: {
+                        cachingTokens:
+                            response.usage.prompt_tokens_details
+                                .caching_tokens ?? 0,
+                        cachedTokens:
+                            response.usage.prompt_tokens_details
+                                .cached_tokens ?? 0,
+                    },
+                },
+            } satisfies SharedV3ProviderMetadata)
             : undefined
 
         // Convert to content format
-        const content: Array<LanguageModelV2Content> = []
+        const content: Array<LanguageModelV3Content> = []
 
         // Add text content
         if (choice.message.content) {
@@ -268,13 +268,13 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         }
     }
 
-    async doStream(options: LanguageModelV2CallOptions): Promise<{
-        stream: ReadableStream<LanguageModelV2StreamPart>
+    async doStream(options: LanguageModelV3CallOptions): Promise<{
+        stream: ReadableStream<LanguageModelV3StreamPart>
         request?: {
             body?: unknown
         }
         response?: {
-            headers?: SharedV2Headers
+            headers?: SharedV3Headers
         }
     }> {
         const args = this.getArgs(options)
@@ -313,7 +313,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     ParseResult<
                         z.infer<typeof RequestyStreamChatCompletionChunkSchema>
                     >,
-                    LanguageModelV2StreamPart
+                    LanguageModelV3StreamPart
                 >({
                     transform,
                     flush,
@@ -421,9 +421,9 @@ function prepareToolsAndToolChoice({
     toolChoice,
 }: {
     tools?: Array<
-        LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool
+        LanguageModelV3FunctionTool | LanguageModelV3ProviderDefinedTool
     >
-    toolChoice?: LanguageModelV2CallOptions['toolChoice']
+    toolChoice?: LanguageModelV3CallOptions['toolChoice']
 }) {
     // when the tools array is empty, change it to undefined to prevent errors:
     const validTools = tools?.length ? tools : undefined
