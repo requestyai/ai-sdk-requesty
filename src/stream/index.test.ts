@@ -1,4 +1,4 @@
-import type { LanguageModelV2StreamPart } from '@ai-sdk/provider'
+import type { LanguageModelV3StreamPart } from '@ai-sdk/provider'
 import { describe, expect, it, vi } from 'vitest'
 import { createTransform } from './index'
 
@@ -21,9 +21,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -61,9 +61,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -103,9 +103,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -144,9 +144,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -185,9 +185,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -237,9 +237,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -298,9 +298,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -351,9 +351,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -409,9 +409,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -1040,9 +1040,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -1120,9 +1120,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any
@@ -1211,9 +1211,9 @@ describe('stream', () => {
                 existingToolCalls,
             })
 
-            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const enqueuedParts: LanguageModelV3StreamPart[] = []
             const controller = {
-                enqueue: (part: LanguageModelV2StreamPart) => {
+                enqueue: (part: LanguageModelV3StreamPart) => {
                     enqueuedParts.push(part)
                 },
             } as any

@@ -1,4 +1,4 @@
-import type { LanguageModelV2Message } from '@ai-sdk/provider'
+import type { LanguageModelV3Message } from '@ai-sdk/provider'
 import { describe, expect, it } from 'vitest'
 import type { RequestyChatMessage } from '../types'
 import { handleAssistantMessage } from './handle-assistant-message'
@@ -7,7 +7,7 @@ describe('assistant messages', () => {
     it.for<
         [
             string,
-            Extract<LanguageModelV2Message, { role: 'assistant' }>,
+            Extract<LanguageModelV3Message, { role: 'assistant' }>,
             RequestyChatMessage,
         ]
     >([

@@ -1,8 +1,8 @@
-import type { LanguageModelV2Message } from '@ai-sdk/provider'
+import type { LanguageModelV3Message } from '@ai-sdk/provider'
 import type { RequestyChatMessage, RequestyToolCall } from '../types'
 
 export function handleAssistantMessage(
-    message: Extract<LanguageModelV2Message, { role: 'assistant' }>,
+    message: Extract<LanguageModelV3Message, { role: 'assistant' }>,
 ): RequestyChatMessage {
     const assistantMessage: RequestyChatMessage = {
         role: 'assistant',

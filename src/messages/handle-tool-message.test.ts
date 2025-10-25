@@ -1,13 +1,13 @@
 import type {
-    LanguageModelV2Message,
-    LanguageModelV2ToolResultPart,
+    LanguageModelV3Message,
+    LanguageModelV3ToolResultPart,
 } from '@ai-sdk/provider'
 import { describe, expect, it } from 'vitest'
 import type { RequestyChatMessage } from '../types'
 import { handleToolContentPart, handleToolMessage } from './handle-tool-message'
 
 describe('tool messages', () => {
-    it.for<[string, LanguageModelV2ToolResultPart, string]>([
+    it.for<[string, LanguageModelV3ToolResultPart, string]>([
         [
             'text output',
             {
@@ -166,7 +166,7 @@ describe('tool messages', () => {
     it.for<
         [
             string,
-            Extract<LanguageModelV2Message, { role: 'tool' }>,
+            Extract<LanguageModelV3Message, { role: 'tool' }>,
             Array<RequestyChatMessage>,
         ]
     >([

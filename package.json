@@ -1,6 +1,6 @@
 {
     "name": "@requesty/ai-sdk",
-    "version": "2.0.4",
+    "version": "3.0.0-beta.0",
     "license": "Apache-2.0",
     "sideEffects": false,
     "main": "./dist/index.js",
@@ -41,7 +41,7 @@
         }
     },
     "dependencies": {
-        "@ai-sdk/provider": "^2.0.0",
+        "@ai-sdk/provider": "3.0.0-beta.8",
         "@ai-sdk/provider-utils": "^3.0.9"
     },
     "devDependencies": {
@@ -49,7 +49,7 @@
         "@edge-runtime/vm": "5.0.0",
         "@types/jest": "29.5.14",
         "@types/node": "22.13.5",
-        "ai": "^5.0.52",
+        "ai": "6.0.0-beta.72",
         "dotenv": "^17.2.3",
         "msw": "^2.11.3",
         "tsdown": "^0.15.7",
