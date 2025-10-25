@@ -1,8 +1,8 @@
 import type {
-    LanguageModelV2FinishReason,
-    LanguageModelV2StreamPart,
-    LanguageModelV2Usage,
-    SharedV2ProviderMetadata,
+    LanguageModelV3FinishReason,
+    LanguageModelV3StreamPart,
+    LanguageModelV3Usage,
+    SharedV3ProviderMetadata,
 } from '@ai-sdk/provider'
 import {
     generateId,
@@ -27,8 +27,8 @@ type DefinedToolCall = NonNullable<ToolCall>[number]
 
 function handleUsageChunk(
     usage: NonNullable<ChunkType['usage']>,
-): [LanguageModelV2Usage, Partial<RequestyUsage>] {
-    const modelUsage: LanguageModelV2Usage = {
+): [LanguageModelV3Usage, Partial<RequestyUsage>] {
+    const modelUsage: LanguageModelV3Usage = {
         inputTokens: usage.prompt_tokens ?? 0,
         outputTokens: usage.completion_tokens ?? 0,
         totalTokens: usage.total_tokens ?? 0,
@@ -44,10 +44,10 @@ function handleUsageChunk(
 type CreateStreamReturn = {
     transform: (
         chunk: Chunk,
-        controller: TransformStreamDefaultController<LanguageModelV2StreamPart>,
+        controller: TransformStreamDefaultController<LanguageModelV3StreamPart>,
     ) => void
     flush: (
-        controller: TransformStreamDefaultController<LanguageModelV2StreamPart>,
+        controller: TransformStreamDefaultController<LanguageModelV3StreamPart>,
     ) => void
 }
 
@@ -68,8 +68,8 @@ const createValue = <T>(startingValue: T): Value<T> => {
 }
 
 type CreateTransformMethods = {
-    finishReason: Value<LanguageModelV2FinishReason>
-    usage: Value<LanguageModelV2Usage>
+    finishReason: Value<LanguageModelV3FinishReason>
+    usage: Value<LanguageModelV3Usage>
     requestyUsage: Value<Partial<RequestyUsage>>
     activeId: Value<string | undefined>
     reasoningId: Value<string | undefined>
@@ -297,7 +297,7 @@ export const createFlush = ({
         }
 
         const currentRequestyUsage = requestyUsage.get()
-        const providerMetadata: SharedV2ProviderMetadata = {
+        const providerMetadata: SharedV3ProviderMetadata = {
             requesty: {
                 usage:
                     currentRequestyUsage.cachedTokens &&
@@ -323,8 +323,8 @@ export const createFlush = ({
 export const createStreamMethods = (): CreateStreamReturn => {
     const activeId = createValue<string | undefined>(undefined)
     const reasoningId = createValue<string | undefined>(undefined)
-    const finishReason = createValue<LanguageModelV2FinishReason>('other')
-    const usage = createValue<LanguageModelV2Usage>({
+    const finishReason = createValue<LanguageModelV3FinishReason>('other')
+    const usage = createValue<LanguageModelV3Usage>({
         inputTokens: 0,
         outputTokens: 0,
         totalTokens: 0,
