@@ -1,4 +1,4 @@
-import { Experimental_Agent as Agent, type ToolSet, tool } from 'ai'
+import { ToolLoopAgent, type ToolSet, tool } from 'ai'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { z } from 'zod'
 import { createRequesty } from '..'
@@ -417,7 +417,7 @@ function resetInventoryAndOrders() {
 const modelsToTest = getTestModels()
 
 const testGenerateAgent = async <T extends ToolSet>(
-    agent: Agent<T>,
+    agent: ToolLoopAgent<T>,
     prompt: string,
 ) => {
     const { steps } = await agent.generate({
@@ -428,10 +428,10 @@ const testGenerateAgent = async <T extends ToolSet>(
 }
 
 const testStreamAgent = async <T extends ToolSet>(
-    agent: Agent<T>,
+    agent: ToolLoopAgent<T>,
     prompt: string,
 ) => {
-    const result = agent.stream({
+    const result = await agent.stream({
         prompt,
     })
 
@@ -447,13 +447,13 @@ const testStreamAgent = async <T extends ToolSet>(
 describe.concurrent.each(modelsToTest)(
     'Pizza Agent Tests - $name',
     ({ id }) => {
-        let pizzaAgent: Agent<typeof tools>
+        let pizzaAgent: ToolLoopAgent<typeof tools>
 
         beforeAll(() => {
             resetInventoryAndOrders()
-            pizzaAgent = new Agent({
+            pizzaAgent = new ToolLoopAgent<typeof tools>({
                 model: requesty.chat(id),
-                system: systemPrompt,
+                instructions: systemPrompt,
                 tools,
             })
         })
