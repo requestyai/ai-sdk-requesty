@@ -1,11 +1,11 @@
 import type {
-    LanguageModelV2Message,
-    LanguageModelV2ToolResultPart,
+    LanguageModelV3Message,
+    LanguageModelV3ToolResultPart,
 } from '@ai-sdk/provider'
 import type { RequestyChatMessage } from '../types'
 
 export function handleToolContentPart(
-    contentPart: LanguageModelV2ToolResultPart,
+    contentPart: LanguageModelV3ToolResultPart,
 ): string {
     switch (contentPart.output.type) {
         case 'error-text':
@@ -19,11 +19,13 @@ export function handleToolContentPart(
                 .filter((c) => c.type === 'text')
                 .map((c) => c.text)
                 .join('')
+        case 'execution-denied':
+            return contentPart.output.reason ?? 'execution denied'
     }
 }
 
 export function handleToolMessage(
-    message: Extract<LanguageModelV2Message, { role: 'tool' }>,
+    message: Extract<LanguageModelV3Message, { role: 'tool' }>,
 ): Array<RequestyChatMessage> {
     return message.content.map((c) => ({
         role: 'tool',

@@ -1,6 +1,6 @@
 import type {
-    LanguageModelV2FilePart,
-    LanguageModelV2Message,
+    LanguageModelV3FilePart,
+    LanguageModelV3Message,
 } from '@ai-sdk/provider'
 import type {
     RequestUserObjectContentParts,
@@ -11,7 +11,7 @@ import type {
 function handleUserFileMessage({
     data,
     mediaType,
-}: LanguageModelV2FilePart): RequestyImagePart {
+}: LanguageModelV3FilePart): RequestyImagePart {
     if (data instanceof Uint8Array) {
         const base64 = Buffer.from(data).toString('base64')
         return {
@@ -62,7 +62,7 @@ function handleUserFileMessage({
 }
 
 export function handleUserMessage(
-    message: Extract<LanguageModelV2Message, { role: 'user' }>,
+    message: Extract<LanguageModelV3Message, { role: 'user' }>,
 ): RequestyChatMessage {
     const includesImages = message.content.some((c) => c.type === 'file')
     if (!includesImages) {

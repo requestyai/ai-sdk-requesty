@@ -1,4 +1,4 @@
-import type { LanguageModelV2Message } from '@ai-sdk/provider'
+import type { LanguageModelV3Message } from '@ai-sdk/provider'
 import { describe, expect, it } from 'vitest'
 import type { RequestyChatMessage } from '../types'
 import { handleUserMessage } from './handle-user-message'
@@ -45,7 +45,7 @@ describe('user messages', () => {
     it.for<
         [
             string,
-            Extract<LanguageModelV2Message, { role: 'user' }>,
+            Extract<LanguageModelV3Message, { role: 'user' }>,
             RequestyChatMessage,
         ]
     >([

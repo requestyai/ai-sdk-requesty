@@ -1,8 +1,8 @@
-import type { LanguageModelV2Message } from '@ai-sdk/provider'
+import type { LanguageModelV3Message } from '@ai-sdk/provider'
 import type { RequestyChatMessage } from '../types'
 
 export function handleSystemMessage(
-    message: Extract<LanguageModelV2Message, { role: 'system' }>,
+    message: Extract<LanguageModelV3Message, { role: 'system' }>,
 ): RequestyChatMessage {
     return {
         role: 'system',
