@@ -40,11 +40,16 @@ type RequestyChatConfig = {
     extraBody?: Record<string, unknown>
 }
 
+const URL_REGEX = /^https?:\/\/.*$/
+
 export class RequestyChatLanguageModel implements LanguageModelV2 {
     readonly specificationVersion = 'v2'
     readonly provider: string
     readonly modelId: RequestyChatModelId
-    readonly supportedUrls = {}
+    readonly supportedUrls: Record<string, RegExp[]> = {
+        'image/*': [URL_REGEX, /^data:image\/.+;base64,/],
+        'application/*': [URL_REGEX, /^data:application\//],
+    }
 
     readonly settings: RequestyChatSettings
     private readonly config: RequestyChatConfig
