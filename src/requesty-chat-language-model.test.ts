@@ -79,3 +79,29 @@ describe('application/*', () => {
         expect(testAllRegexes(regex!, url)).toBeFalsy()
     })
 })
+
+it('override supported URLs', () => {
+    const customSupportedUrlsModel = new RequestyChatLanguageModel(
+        'gpt-4',
+        {},
+        {
+            provider: 'test-provider',
+            compatibility: 'strict',
+            headers: () => ({}),
+            url: () => 'https://api.example.com',
+            supportedUrls: {
+                something: [/hello/i],
+            },
+        },
+    )
+
+    const image = customSupportedUrlsModel.supportedUrls['image/*']
+    const application = customSupportedUrlsModel.supportedUrls['application/*']
+
+    expect(image).toBeUndefined()
+    expect(application).toBeUndefined()
+
+    const customRegex = customSupportedUrlsModel.supportedUrls.something
+    expect(customRegex).toBeDefined()
+    expect(testAllRegexes(customRegex!, 'hello')).toBeTruthy()
+})

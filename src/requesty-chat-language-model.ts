@@ -38,6 +38,7 @@ type RequestyChatConfig = {
     url: (options: { modelId: string; path: string }) => string
     fetch?: typeof fetch
     extraBody?: Record<string, unknown>
+    supportedUrls?: Record<string, RegExp[]>
 }
 
 const URL_REGEX = /^https?:\/\/.*$/
@@ -46,6 +47,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
     readonly specificationVersion = 'v2'
     readonly provider: string
     readonly modelId: RequestyChatModelId
+
     readonly supportedUrls: Record<string, RegExp[]> = {
         'image/*': [URL_REGEX, /^data:image\/.+;base64,/],
         'application/*': [URL_REGEX, /^data:application\//],
@@ -63,6 +65,10 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         this.settings = settings
         this.config = config
         this.provider = config.provider
+
+        if (config.supportedUrls) {
+            this.supportedUrls = config.supportedUrls
+        }
     }
 
     private getArgs({
