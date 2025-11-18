@@ -51,7 +51,7 @@ export type RequestyProviderMetadata = {
 }
 
 export type RequestUserObjectContentParts = Array<
-    RequestyTextPart | RequestyImagePart
+    RequestyTextPart | RequestyDocumentPart
 >
 
 export interface RequestyChatMessage {
@@ -75,6 +75,14 @@ export interface RequestyImagePart {
         url: string
     }
 }
+
+export interface RequestyFilePart {
+    type: 'input_file'
+    filename: string
+    file_data: string
+}
+
+export type RequestyDocumentPart = RequestyImagePart | RequestyFilePart
 
 export interface RequestyToolCall {
     id: string

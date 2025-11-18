@@ -303,4 +303,38 @@ describe('user messages', () => {
             role: 'user',
         })
     })
+
+    it('converts user message with pdf documents', () => {
+        const userMessage = handleUserMessage({
+            role: 'user',
+            content: [
+                {
+                    type: 'file',
+                    data: new Uint8Array([0, 1, 2, 3]),
+                    mediaType: 'application/pdf',
+                },
+                {
+                    type: 'file',
+                    data: 'https://example.com/doc.pdf',
+                    mediaType: 'application/pdf',
+                },
+            ],
+        })
+
+        expect(userMessage).toStrictEqual({
+            content: [
+                {
+                    file_data: 'data:application/pdf;base64,AAECAw==',
+                    filename: 'unnamed.pdf',
+                    type: 'input_file',
+                },
+                {
+                    file_data: 'https://example.com/doc.pdf',
+                    filename: 'unnamed.pdf',
+                    type: 'input_file',
+                },
+            ],
+            role: 'user',
+        })
+    })
 })
