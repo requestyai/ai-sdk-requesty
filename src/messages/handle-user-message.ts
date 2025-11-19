@@ -15,30 +15,31 @@ const PDF_MEDIA_TYPE = 'application/pdf'
 
 const DEFAULT_PDF_NAME = 'unnamed.pdf'
 
-function toDataUrl(base64Data: string, mediaType: string): string {
+function toBase64DataUrl(base64Data: string, mediaType: string): string {
     return `data:${mediaType};base64,${base64Data}`
 }
 
-function getDataUrl({ data, mediaType }: LanguageModelV2FilePart): string {
+function transformUrl({
+    data,
+    mediaType,
+}: LanguageModelV2FilePart): [string, boolean] {
     if (data instanceof Uint8Array) {
         const base64 = Buffer.from(data).toString('base64')
-        return toDataUrl(base64, mediaType)
+        return [toBase64DataUrl(base64, mediaType), true]
     }
 
     if (data instanceof URL) {
-        return data.href
+        return [data.href, false]
     }
 
     if (typeof data === 'string') {
-        if (
-            data.startsWith('data:') ||
-            data.startsWith('http://') ||
-            data.startsWith('https://')
-        ) {
-            return data
+        if (data.startsWith('data:')) {
+            return [data, true]
+        } else if (data.startsWith('http://') || data.startsWith('https://')) {
+            return [data, false]
+        } else {
+            return [toBase64DataUrl(data, mediaType), true]
         }
-
-        return toDataUrl(data, mediaType)
     }
 
     throw new Error('Unsupported content type')
@@ -47,10 +48,13 @@ function getDataUrl({ data, mediaType }: LanguageModelV2FilePart): string {
 function handleUserFileImageMessage(
     part: LanguageModelV2FilePart,
 ): RequestyImagePart {
+    const [url, isDataUrl] = transformUrl(part)
     return {
         type: 'image_url',
         image_url: {
-            url: getDataUrl(part),
+            url,
+            // gemini models need a mime_type when working with URLs
+            ...(!isDataUrl && { mime_type: part.mediaType }),
         },
     }
 }
@@ -58,9 +62,10 @@ function handleUserFileImageMessage(
 function handleUserFilePDFMessage(
     part: LanguageModelV2FilePart,
 ): RequestyFilePart {
+    const [url] = transformUrl(part)
     return {
         type: 'input_file',
-        file_data: getDataUrl(part),
+        file_data: url,
         filename: part.filename ?? DEFAULT_PDF_NAME,
     }
 }
@@ -73,7 +78,7 @@ function handleUserFileMessage(
     } else if (part.mediaType === PDF_MEDIA_TYPE) {
         return handleUserFilePDFMessage(part)
     } else {
-        throw new Error(`${part.mediaType} mediaType not implemented`)
+        throw new Error(`${part.mediaType} mediaType not supported`)
     }
 }
 
