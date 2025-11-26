@@ -115,7 +115,7 @@ describe('user messages', () => {
                     {
                         type: 'image_url',
                         image_url: {
-                            mime_type: 'image/png',
+                            media_type: 'image/png',
                             url: 'https://example.com/image.png',
                         },
                     },
@@ -188,7 +188,7 @@ describe('user messages', () => {
                     {
                         type: 'image_url',
                         image_url: {
-                            mime_type: 'image/png',
+                            media_type: 'image/png',
                             url: 'https://example.com/photo.jpg',
                         },
                     },
@@ -213,7 +213,7 @@ describe('user messages', () => {
                     {
                         type: 'image_url',
                         image_url: {
-                            mime_type: 'image/webp',
+                            media_type: 'image/webp',
                             url: 'http://example.com/image.webp',
                         },
                     },
@@ -298,7 +298,7 @@ describe('user messages', () => {
                 },
                 {
                     image_url: {
-                        mime_type: 'image/png',
+                        media_type: 'image/png',
                         url: 'https://example.com/image.png',
                     },
                     type: 'image_url',

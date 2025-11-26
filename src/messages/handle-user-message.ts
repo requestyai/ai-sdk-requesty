@@ -54,7 +54,7 @@ function handleUserFileImageMessage(
         image_url: {
             url,
             // gemini models need a mime_type when working with URLs
-            ...(!isDataUrl && { mime_type: part.mediaType }),
+            ...(!isDataUrl && { media_type: part.mediaType }),
         },
     }
 }

@@ -73,7 +73,7 @@ export interface RequestyImagePart {
     type: 'image_url'
     image_url: {
         // [Requesty-Specific]: required for gemini models
-        mime_type?: string
+        media_type?: string
 
         url: string
     }
