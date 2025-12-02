@@ -67,7 +67,7 @@ describe.concurrent.each(modelsToTest)(
                         },
                         { role: 'user', content: 'What about Germany?' },
                     ],
-                    maxOutputTokens: 50,
+                    maxOutputTokens: 500,
                 })
 
                 expect(result.text).toBeDefined()

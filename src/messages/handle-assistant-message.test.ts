@@ -299,6 +299,40 @@ describe('assistant messages', () => {
                 content: 'Here you go.',
             },
         ],
+        [
+            'preserves reasoning signature',
+            {
+                role: 'assistant',
+                content: [
+                    {
+                        type: 'tool-call',
+                        toolCallId: 'call_999',
+                        toolName: 'search',
+                        input: { query: 'answer' },
+                        providerOptions: {
+                            requesty: {
+                                reasoning_signature: 'signature',
+                            },
+                        },
+                    },
+                ],
+            },
+            {
+                role: 'assistant',
+                reasoning_signature: 'signature',
+                content: null,
+                tool_calls: [
+                    {
+                        function: {
+                            arguments: '{"query":"answer"}',
+                            name: 'search',
+                        },
+                        id: 'call_999',
+                        type: 'function',
+                    },
+                ],
+            },
+        ],
     ])(
         'converts assistant messages: %s',
         ([_testName, message, expectedMessage]) =>

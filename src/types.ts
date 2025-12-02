@@ -60,6 +60,7 @@ export interface RequestyChatMessage {
     tool_call_id?: string
     tool_calls?: RequestyToolCall[]
     reasoning?: string
+    reasoning_signature?: string
 }
 
 export type RequestyChatPrompt = RequestyChatMessage[]

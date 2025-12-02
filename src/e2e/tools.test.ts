@@ -67,5 +67,68 @@ describe.concurrent.each(modelsToTest)(
 
             expect(steps.length).toBeGreaterThan(0)
         })
+
+        it('should handle multi conversation tools', async () => {
+            const firstResult = await generateText({
+                model,
+                prompt: 'What is the weather like in London?',
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 1000,
+            })
+
+            expect(firstResult.text).toBeDefined()
+            expect(firstResult.usage.inputTokens).toBeGreaterThan(0)
+            expect(firstResult.usage.outputTokens).toBeGreaterThan(0)
+            expect(firstResult.toolCalls.length).toBeGreaterThan(0)
+
+            const firstToolCall = firstResult.toolCalls[0]
+            expect(firstToolCall?.toolName).toBe('getWeather')
+            expect(firstToolCall?.input).toBeDefined()
+
+            const secondResult = await generateText({
+                model,
+                messages: firstResult.response.messages,
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 1000,
+            })
+
+            expect(secondResult.text).toBeDefined()
+            expect(secondResult.text).length.greaterThan(0)
+
+            const thirdResult = await generateText({
+                model,
+                messages: [
+                    ...secondResult.response.messages,
+                    { role: 'user', content: 'What about Lisbon?' },
+                ],
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 1000,
+            })
+
+            expect(thirdResult.text).toBeDefined()
+            expect(thirdResult.toolCalls.length).toBeGreaterThan(0)
+
+            const thirdToolCall = firstResult.toolCalls[0]
+            expect(thirdToolCall?.toolName).toBe('getWeather')
+            expect(thirdToolCall?.input).toBeDefined()
+
+            const forthResult = await generateText({
+                model,
+                messages: thirdResult.response.messages,
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 1000,
+            })
+
+            expect(forthResult.text).toBeDefined()
+            expect(forthResult.text).length.greaterThan(0)
+        })
     },
 )
