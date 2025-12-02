@@ -42,6 +42,7 @@ export interface ChatCompletionContentPartText {
 export interface ChatCompletionAssistantMessageParam {
     role: 'assistant'
     content?: string | null
+    reasoning_signature?: string
     tool_calls?: Array<ChatCompletionMessageToolCall>
     cache_control?: RequestyCacheControl
 }

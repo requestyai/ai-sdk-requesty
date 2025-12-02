@@ -11,6 +11,7 @@ import type {
     LanguageModelV2Usage,
     SharedV2Headers,
     SharedV2ProviderMetadata,
+    SharedV2ProviderOptions,
 } from '@ai-sdk/provider'
 import { UnsupportedFunctionalityError } from '@ai-sdk/provider'
 import type { ParseResult } from '@ai-sdk/provider-utils'
@@ -177,6 +178,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             body?: unknown
         }
         warnings: Array<LanguageModelV2CallWarning>
+        providerOptions?: SharedV2ProviderOptions
     }> {
         const args = this.getArgs(options)
 
@@ -239,16 +241,34 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         // Add tool calls
         if (choice.message.tool_calls) {
             for (const toolCall of choice.message.tool_calls) {
-                content.push({
+                const toolCallContent: LanguageModelV2Content = {
                     type: 'tool-call',
                     toolCallId: toolCall.id ?? generateId(),
                     toolName: toolCall.function.name,
                     input: toolCall.function.arguments as any, // AI SDK expects unknown/any for tool input
-                })
+                }
+
+                if (choice.message.reasoning_signature) {
+                    // we read `providerOptions` when converting to Requesty messages
+                    // but the SDK assigns `providerOptions` to the value of `providerMetadata`
+                    // presumably because we don't have a `providerOptions` here.
+                    //
+                    // https://github.com/vercel/ai/blob/756edf9672d95cd884449fa9ec9e9c08bf4bd5f6/packages/ai/src/generate-text/to-response-messages.ts#L37
+                    toolCallContent.providerMetadata = {
+                        requesty: {
+                            reasoning_signature:
+                                choice.message.reasoning_signature,
+                        },
+                    }
+                }
+
+                content.push(toolCallContent)
             }
         }
 
-        return {
+        const res: Awaited<
+            ReturnType<RequestyChatLanguageModel['doGenerate']>
+        > = {
             content,
             finishReason: mapRequestyFinishReason(choice.finish_reason),
             usage: {
@@ -266,6 +286,8 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             },
             warnings: [],
         }
+
+        return res
     }
 
     async doStream(options: LanguageModelV2CallOptions): Promise<{
@@ -334,6 +356,7 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
                 role: z.string(),
                 content: z.string().nullable().optional(),
                 reasoning: z.string().optional(),
+                reasoning_signature: z.string().optional(),
                 tool_calls: z
                     .array(
                         z.object({

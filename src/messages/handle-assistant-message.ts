@@ -27,18 +27,31 @@ export function handleAssistantMessage(
         assistantMessage.reasoning = reasoning
     }
 
-    const toolCalls: Array<RequestyToolCall> = message.content
-        .filter((c) => c.type === 'tool-call')
-        .map((c) => ({
-            id: c.toolCallId,
-            type: 'function',
-            function: {
-                name: c.toolName,
-                arguments: JSON.stringify(c.input),
-            },
-        }))
+    const contentToolCalls = message.content.filter(
+        (c) => c.type === 'tool-call',
+    )
+
+    const toolCalls: Array<RequestyToolCall> = contentToolCalls.map((c) => ({
+        id: c.toolCallId,
+        type: 'function',
+        function: {
+            name: c.toolName,
+            arguments: JSON.stringify(c.input),
+        },
+    }))
+
     if (toolCalls.length > 0) {
         assistantMessage.tool_calls = toolCalls
+    }
+
+    const reasoningSignature = contentToolCalls.find(
+        (c) => c.providerOptions?.requesty?.reasoning_signature,
+    )
+
+    if (reasoningSignature) {
+        assistantMessage.reasoning_signature =
+            reasoningSignature.providerOptions!.requesty!
+                .reasoning_signature as string
     }
 
     return assistantMessage
