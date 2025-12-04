@@ -330,11 +330,13 @@ describe('user messages', () => {
                 {
                     file_data: 'data:application/pdf;base64,AAECAw==',
                     filename: 'unnamed.pdf',
+                    mime_type: 'application/pdf',
                     type: 'input_file',
                 },
                 {
                     file_data: 'https://example.com/doc.pdf',
                     filename: 'unnamed.pdf',
+                    mime_type: 'application/pdf',
                     type: 'input_file',
                 },
             ],
