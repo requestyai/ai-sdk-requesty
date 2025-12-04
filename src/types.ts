@@ -84,6 +84,7 @@ export interface RequestyFilePart {
     type: 'input_file'
     filename: string
     file_data: string
+    mime_type?: string
 }
 
 export type RequestyDocumentPart = RequestyImagePart | RequestyFilePart

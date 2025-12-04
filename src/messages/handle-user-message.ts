@@ -67,6 +67,7 @@ function handleUserFilePDFMessage(
         type: 'input_file',
         file_data: url,
         filename: part.filename ?? DEFAULT_PDF_NAME,
+        mime_type: PDF_MEDIA_TYPE,
     }
 }
 
