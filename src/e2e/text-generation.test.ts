@@ -20,7 +20,7 @@ describe.concurrent.each(modelsToTest)(
                 const result = await generateText({
                     model,
                     prompt: 'Hello! Introduce yourself briefly.',
-                    maxOutputTokens: 50,
+                    maxOutputTokens: 500,
                     temperature: 0.3,
                 })
 
@@ -82,7 +82,7 @@ describe.concurrent.each(modelsToTest)(
                 const streamResult = streamText({
                     model,
                     prompt: 'Explain the numbers 1 through 5 briefly.',
-                    maxOutputTokens: 300,
+                    maxOutputTokens: 1000,
                     temperature: 0.5,
                 })
 

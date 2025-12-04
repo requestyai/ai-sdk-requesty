@@ -446,6 +446,7 @@ const testStreamAgent = async <T extends ToolSet>(
 
 describe.concurrent.each(modelsToTest)(
     'Pizza Agent Tests - $name',
+    { timeout: 90_000 },
     ({ id }) => {
         let pizzaAgent: Agent<typeof tools>
 
