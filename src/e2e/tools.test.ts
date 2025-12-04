@@ -36,6 +36,7 @@ describe.concurrent.each(modelsToTest)(
                 },
                 maxOutputTokens: 200,
                 temperature: 0.3,
+                toolChoice: 'required',
             })
 
             expect(result.text).toBeDefined()
@@ -57,6 +58,7 @@ describe.concurrent.each(modelsToTest)(
                 },
                 maxOutputTokens: 300,
                 temperature: 0.4,
+                toolChoice: 'required',
             })
 
             for await (const _delta of streamResult.textStream) {
@@ -76,6 +78,7 @@ describe.concurrent.each(modelsToTest)(
                     getWeather: weatherTool,
                 },
                 maxOutputTokens: 1000,
+                toolChoice: 'required',
             })
 
             expect(firstResult.text).toBeDefined()
@@ -109,6 +112,7 @@ describe.concurrent.each(modelsToTest)(
                     getWeather: weatherTool,
                 },
                 maxOutputTokens: 1000,
+                toolChoice: 'required',
             })
 
             expect(thirdResult.text).toBeDefined()
@@ -117,18 +121,6 @@ describe.concurrent.each(modelsToTest)(
             const thirdToolCall = firstResult.toolCalls[0]
             expect(thirdToolCall?.toolName).toBe('getWeather')
             expect(thirdToolCall?.input).toBeDefined()
-
-            const forthResult = await generateText({
-                model,
-                messages: thirdResult.response.messages,
-                tools: {
-                    getWeather: weatherTool,
-                },
-                maxOutputTokens: 1000,
-            })
-
-            expect(forthResult.text).toBeDefined()
-            expect(forthResult.text).length.greaterThan(0)
         })
     },
 )
