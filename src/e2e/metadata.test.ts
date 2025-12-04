@@ -18,8 +18,8 @@ describe.concurrent.each(modelsToTest)(
         it('should handle provider-specific options (Requesty metadata)', async () => {
             const result = await generateText({
                 model,
-                prompt: 'Explain artificial intelligence in one sentence.',
-                maxOutputTokens: 100,
+                prompt: 'Explain artificial intelligence in one very small sentence.',
+                maxOutputTokens: 2000,
                 providerOptions: {
                     requesty: {
                         tags: ['ai-sdk-test', 'explanation'],
@@ -50,7 +50,7 @@ describe.concurrent.each(modelsToTest)(
                         content: [
                             {
                                 type: 'text',
-                                text: 'Describe this simple image:',
+                                text: 'Describe this simple image in 10 words.',
                             },
                             {
                                 type: 'image',
@@ -59,7 +59,7 @@ describe.concurrent.each(modelsToTest)(
                         ],
                     },
                 ],
-                maxOutputTokens: 100,
+                maxOutputTokens: 2000,
             })
 
             expect(result.text).toBeDefined()

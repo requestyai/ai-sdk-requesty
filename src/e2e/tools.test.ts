@@ -34,7 +34,7 @@ describe.concurrent.each(modelsToTest)(
                 tools: {
                     getWeather: weatherTool,
                 },
-                maxOutputTokens: 200,
+                maxOutputTokens: 1000,
                 temperature: 0.3,
                 toolChoice: 'required',
             })
@@ -77,7 +77,7 @@ describe.concurrent.each(modelsToTest)(
                 tools: {
                     getWeather: weatherTool,
                 },
-                maxOutputTokens: 1000,
+                maxOutputTokens: 2000,
                 toolChoice: 'required',
             })
 
@@ -96,7 +96,7 @@ describe.concurrent.each(modelsToTest)(
                 tools: {
                     getWeather: weatherTool,
                 },
-                maxOutputTokens: 1000,
+                maxOutputTokens: 2000,
             })
 
             expect(secondResult.text).toBeDefined()
@@ -111,7 +111,7 @@ describe.concurrent.each(modelsToTest)(
                 tools: {
                     getWeather: weatherTool,
                 },
-                maxOutputTokens: 1000,
+                maxOutputTokens: 2000,
                 toolChoice: 'required',
             })
 
