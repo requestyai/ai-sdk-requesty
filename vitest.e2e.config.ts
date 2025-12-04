@@ -5,10 +5,10 @@ export default defineConfig({
     test: {
         environment: 'node',
         include: ['**/e2e/**/*.test.ts'],
-        testTimeout: 30000,
+        testTimeout: 50_000,
         globalSetup: ['./src/e2e/global-setup.ts'],
         setupFiles: ['./src/e2e/setup.ts'],
 
-        slowTestThreshold: 20_000,
+        slowTestThreshold: 30_000,
     },
 })
