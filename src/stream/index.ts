@@ -257,12 +257,22 @@ export const createTransform = ({
                     id: currentToolCall.id,
                 })
 
-                controller.enqueue({
+                const toolStartPart: LanguageModelV2StreamPart = {
                     type: 'tool-call',
                     toolCallId: currentToolCall.id,
                     input: currentToolCall.function.arguments,
                     toolName: currentToolCall.function.name,
-                })
+                }
+
+                if (delta.reasoning_signature) {
+                    toolStartPart.providerMetadata = {
+                        requesty: {
+                            reasoning_signature: delta.reasoning_signature,
+                        },
+                    }
+                }
+
+                controller.enqueue(toolStartPart)
             }
         }
     }

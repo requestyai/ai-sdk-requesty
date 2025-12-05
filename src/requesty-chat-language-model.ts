@@ -414,6 +414,7 @@ export const RequestyStreamChatCompletionChunkSchema = z.object({
                 delta: z
                     .object({
                         content: z.string().nullable().optional(),
+                        reasoning_signature: z.string().nullable().optional(),
                         reasoning: z.string().nullable().optional(),
                         tool_calls: RequestyStreamChatCompletionToolSchema,
                     })
