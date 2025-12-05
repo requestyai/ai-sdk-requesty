@@ -1,5 +1,6 @@
 import type { LanguageModelV2Message } from '@ai-sdk/provider'
 import type { RequestyChatMessage, RequestyToolCall } from '../types'
+import { maybeGetReasoningContent } from '../util'
 
 export function handleAssistantMessage(
     message: Extract<LanguageModelV2Message, { role: 'assistant' }>,
@@ -44,14 +45,16 @@ export function handleAssistantMessage(
         assistantMessage.tool_calls = toolCalls
     }
 
-    const reasoningSignature = contentToolCalls.find(
+    const toolCallWithReasoningSignature = contentToolCalls.find(
         (c) => c.providerOptions?.requesty?.reasoning_signature,
     )
 
+    const reasoningSignature = maybeGetReasoningContent(
+        toolCallWithReasoningSignature,
+    )
+
     if (reasoningSignature) {
-        assistantMessage.reasoning_signature =
-            reasoningSignature.providerOptions!.requesty!
-                .reasoning_signature as string
+        assistantMessage.reasoning_signature = reasoningSignature
     }
 
     return assistantMessage
