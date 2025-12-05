@@ -1266,5 +1266,136 @@ describe('stream', () => {
                 toolName: 'get_time',
             })
         })
+
+        it('includes reasoning_signature in tool-call providerMetadata when present', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const controller = {
+                enqueue: (part: LanguageModelV2StreamPart) => {
+                    enqueuedParts.push(part)
+                },
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                delta: {
+                                    tool_calls: [
+                                        {
+                                            index: 0,
+                                            id: 'call_123',
+                                            type: 'function',
+                                            function: {
+                                                name: 'get_weather',
+                                                arguments: '{"location":"NYC"}',
+                                            },
+                                        },
+                                    ],
+                                    reasoning_signature: 'sig_abc123',
+                                },
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            const toolCallPart = enqueuedParts.find(
+                (p) => p.type === 'tool-call',
+            )
+            expect(toolCallPart).toBeDefined()
+            expect(toolCallPart).toMatchObject({
+                type: 'tool-call',
+                toolCallId: 'call_123',
+                toolName: 'get_weather',
+                input: '{"location":"NYC"}',
+                providerMetadata: {
+                    requesty: {
+                        reasoning_signature: 'sig_abc123',
+                    },
+                },
+            })
+        })
+
+        it('does not include providerMetadata when reasoning_signature is not present', () => {
+            const finishReason = { get: vi.fn(), set: vi.fn() }
+            const usage = { get: vi.fn(), set: vi.fn() }
+            const requestyUsage = { get: vi.fn(), set: vi.fn() }
+            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
+            const reasoningId = { get: vi.fn(), set: vi.fn() }
+            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
+
+            const transform = createTransform({
+                finishReason,
+                usage,
+                requestyUsage,
+                activeId,
+                reasoningId,
+                existingToolCalls,
+            })
+
+            const enqueuedParts: LanguageModelV2StreamPart[] = []
+            const controller = {
+                enqueue: (part: LanguageModelV2StreamPart) => {
+                    enqueuedParts.push(part)
+                },
+            } as any
+
+            transform(
+                {
+                    success: true,
+                    value: {
+                        choices: [
+                            {
+                                delta: {
+                                    tool_calls: [
+                                        {
+                                            index: 0,
+                                            id: 'call_123',
+                                            type: 'function',
+                                            function: {
+                                                name: 'get_weather',
+                                                arguments: '{"location":"NYC"}',
+                                            },
+                                        },
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                } as any,
+                controller,
+            )
+
+            const toolCallPart = enqueuedParts.find(
+                (p) => p.type === 'tool-call',
+            )
+            expect(toolCallPart).toBeDefined()
+            expect(toolCallPart).toMatchObject({
+                type: 'tool-call',
+                toolCallId: 'call_123',
+                toolName: 'get_weather',
+                input: '{"location":"NYC"}',
+            })
+            expect(toolCallPart).not.toHaveProperty('providerMetadata')
+        })
     })
 })

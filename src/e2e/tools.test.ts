@@ -122,5 +122,44 @@ describe.concurrent.each(modelsToTest)(
             expect(thirdToolCall?.toolName).toBe('getWeather')
             expect(thirdToolCall?.input).toBeDefined()
         })
+
+        it('should handle streaming multi conversation tools', async () => {
+            const firstResult = streamText({
+                model,
+                prompt: 'What is the weather like in London?',
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 2000,
+                toolChoice: 'required',
+            })
+
+            await firstResult.consumeStream()
+
+            await expect(firstResult.text).resolves.toBeDefined()
+
+            const firstResultToolCalls = await firstResult.toolCalls
+
+            expect(firstResultToolCalls.length).toBeGreaterThan(0)
+
+            const firstToolCall = firstResultToolCalls[0]
+            expect(firstToolCall?.toolName).toBe('getWeather')
+            expect(firstToolCall?.input).toBeDefined()
+
+            const firstResultMessages = (await firstResult.response).messages
+
+            const secondResult = streamText({
+                model,
+                messages: firstResultMessages,
+                tools: {
+                    getWeather: weatherTool,
+                },
+                maxOutputTokens: 2000,
+            })
+
+            await secondResult.consumeStream()
+
+            await expect(secondResult.text).resolves.toBeDefined()
+        })
     },
 )
