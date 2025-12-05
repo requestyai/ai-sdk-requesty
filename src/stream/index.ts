@@ -16,7 +16,7 @@ import type {
     RequestyStreamChatCompletionToolSchema,
 } from '../requesty-chat-language-model'
 import type { RequestyUsage } from '../types'
-import { assertDefined } from '../util'
+import { assertDefined, maybeSetReasoningContent } from '../util'
 
 type ChunkType = z.infer<typeof RequestyStreamChatCompletionChunkSchema>
 type Chunk = ParseResult<ChunkType>
@@ -264,13 +264,10 @@ export const createTransform = ({
                     toolName: currentToolCall.function.name,
                 }
 
-                if (delta.reasoning_signature) {
-                    toolStartPart.providerMetadata = {
-                        requesty: {
-                            reasoning_signature: delta.reasoning_signature,
-                        },
-                    }
-                }
+                maybeSetReasoningContent(
+                    toolStartPart,
+                    delta.reasoning_signature,
+                )
 
                 controller.enqueue(toolStartPart)
             }

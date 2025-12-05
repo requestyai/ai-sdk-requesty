@@ -31,6 +31,7 @@ import type {
 } from './requesty-chat-settings'
 import { requestyFailedResponseHandler } from './requesty-error'
 import { createStreamMethods } from './stream'
+import { maybeSetReasoningContent } from './util'
 
 type RequestyChatConfig = {
     provider: string
@@ -248,19 +249,10 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     input: toolCall.function.arguments as any, // AI SDK expects unknown/any for tool input
                 }
 
-                if (choice.message.reasoning_signature) {
-                    // we read `providerOptions` when converting to Requesty messages
-                    // but the SDK assigns `providerOptions` to the value of `providerMetadata`
-                    // presumably because we don't have a `providerOptions` here.
-                    //
-                    // https://github.com/vercel/ai/blob/756edf9672d95cd884449fa9ec9e9c08bf4bd5f6/packages/ai/src/generate-text/to-response-messages.ts#L37
-                    toolCallContent.providerMetadata = {
-                        requesty: {
-                            reasoning_signature:
-                                choice.message.reasoning_signature,
-                        },
-                    }
-                }
+                maybeSetReasoningContent(
+                    toolCallContent,
+                    choice.message.reasoning_signature,
+                )
 
                 content.push(toolCallContent)
             }
