@@ -57,11 +57,9 @@ describe('Requesty Integration - Chat', () => {
 
             expect(result.text).toBe('Hello! How can I help you today?')
             expect(result.finishReason).toBe('stop')
-            expect(result.usage).toEqual({
-                inputTokens: 10,
-                outputTokens: 9,
-                totalTokens: 19,
-            })
+            expect(result.usage.inputTokens).toBe(10)
+            expect(result.usage.outputTokens).toBe(9)
+            expect(result.usage.totalTokens).toBe(19)
         })
 
         it('should handle tool calls', async () => {
@@ -271,11 +269,9 @@ describe('Requesty Integration - Chat', () => {
             const usage = await result.usage
 
             expect(finishReason).toBe('stop')
-            expect(usage).toEqual({
-                inputTokens: 10,
-                outputTokens: 5,
-                totalTokens: 15,
-            })
+            expect(usage.inputTokens).toBe(10)
+            expect(usage.outputTokens).toBe(5)
+            expect(usage.totalTokens).toBe(15)
         })
 
         it('should handle streaming tool calls', async () => {

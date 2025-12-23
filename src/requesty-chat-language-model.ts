@@ -1,17 +1,17 @@
 import type {
-    LanguageModelV2,
-    LanguageModelV2CallOptions,
-    LanguageModelV2CallWarning,
-    LanguageModelV2Content,
-    LanguageModelV2FinishReason,
-    LanguageModelV2FunctionTool,
-    LanguageModelV2ProviderDefinedTool,
-    LanguageModelV2ResponseMetadata,
-    LanguageModelV2StreamPart,
-    LanguageModelV2Usage,
-    SharedV2Headers,
-    SharedV2ProviderMetadata,
-    SharedV2ProviderOptions,
+    LanguageModelV3,
+    LanguageModelV3CallOptions,
+    LanguageModelV3Content,
+    LanguageModelV3FinishReason,
+    LanguageModelV3FunctionTool,
+    LanguageModelV3ProviderTool,
+    LanguageModelV3ResponseMetadata,
+    LanguageModelV3StreamPart,
+    LanguageModelV3Usage,
+    SharedV3Headers,
+    SharedV3ProviderMetadata,
+    SharedV3ProviderOptions,
+    SharedV3Warning,
 } from '@ai-sdk/provider'
 import { UnsupportedFunctionalityError } from '@ai-sdk/provider'
 import type { ParseResult } from '@ai-sdk/provider-utils'
@@ -31,6 +31,8 @@ import type {
 } from './requesty-chat-settings'
 import { requestyFailedResponseHandler } from './requesty-error'
 import { createStreamMethods } from './stream'
+import { adaptUsage } from './usage'
+import { RequestyUsageSchema } from './usage/schema'
 import { maybeSetReasoningContent } from './util'
 
 type RequestyChatConfig = {
@@ -45,8 +47,8 @@ type RequestyChatConfig = {
 
 const URL_REGEX = /^https?:\/\/.*$/
 
-export class RequestyChatLanguageModel implements LanguageModelV2 {
-    readonly specificationVersion = 'v2'
+export class RequestyChatLanguageModel implements LanguageModelV3 {
+    readonly specificationVersion = 'v3'
     readonly provider: string
     readonly modelId: RequestyChatModelId
 
@@ -87,7 +89,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         tools,
         toolChoice,
         providerOptions,
-    }: LanguageModelV2CallOptions) {
+    }: LanguageModelV3CallOptions) {
         // Extract requesty metadata from providerOptions and put it at root level
         const requestyMetadata = providerOptions?.['requesty'] ?? {}
         const extraCallingBody: Record<string, any> = {}
@@ -166,20 +168,20 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         return baseArgs
     }
 
-    async doGenerate(options: LanguageModelV2CallOptions): Promise<{
-        content: Array<LanguageModelV2Content>
-        finishReason: LanguageModelV2FinishReason
-        usage: LanguageModelV2Usage
-        providerMetadata?: SharedV2ProviderMetadata
+    async doGenerate(options: LanguageModelV3CallOptions): Promise<{
+        content: Array<LanguageModelV3Content>
+        finishReason: LanguageModelV3FinishReason
+        usage: LanguageModelV3Usage
+        providerMetadata?: SharedV3ProviderMetadata
         request?: {
             body?: unknown
         }
-        response?: LanguageModelV2ResponseMetadata & {
-            headers?: SharedV2Headers
+        response?: LanguageModelV3ResponseMetadata & {
+            headers?: SharedV3Headers
             body?: unknown
         }
-        warnings: Array<LanguageModelV2CallWarning>
-        providerOptions?: SharedV2ProviderOptions
+        providerOptions?: SharedV3ProviderOptions
+        warnings: Array<SharedV3Warning>
     }> {
         const args = this.getArgs(options)
 
@@ -217,11 +219,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                                   .cached_tokens ?? 0,
                       },
                   },
-              } satisfies SharedV2ProviderMetadata)
+              } satisfies SharedV3ProviderMetadata)
             : undefined
 
         // Convert to content format
-        const content: Array<LanguageModelV2Content> = []
+        const content: Array<LanguageModelV3Content> = []
 
         // Add text content
         if (choice.message.content) {
@@ -242,7 +244,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         // Add tool calls
         if (choice.message.tool_calls) {
             for (const toolCall of choice.message.tool_calls) {
-                const toolCallContent: LanguageModelV2Content = {
+                const toolCallContent: LanguageModelV3Content = {
                     type: 'tool-call',
                     toolCallId: toolCall.id ?? generateId(),
                     toolName: toolCall.function.name,
@@ -262,12 +264,10 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             ReturnType<RequestyChatLanguageModel['doGenerate']>
         > = {
             content,
-            finishReason: mapRequestyFinishReason(choice.finish_reason),
-            usage: {
-                inputTokens: response.usage?.prompt_tokens ?? 0,
-                outputTokens: response.usage?.completion_tokens ?? 0,
-                totalTokens: response.usage?.total_tokens ?? 0,
-            },
+            finishReason: mapRequestyFinishReason(
+                choice.finish_reason ?? undefined,
+            ),
+            usage: adaptUsage(response.usage),
             ...(providerMetadata ? { providerMetadata } : {}),
             request: { body: rawSettings },
             response: {
@@ -282,13 +282,13 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
         return res
     }
 
-    async doStream(options: LanguageModelV2CallOptions): Promise<{
-        stream: ReadableStream<LanguageModelV2StreamPart>
+    async doStream(options: LanguageModelV3CallOptions): Promise<{
+        stream: ReadableStream<LanguageModelV3StreamPart>
         request?: {
             body?: unknown
         }
         response?: {
-            headers?: SharedV2Headers
+            headers?: SharedV3Headers
         }
     }> {
         const args = this.getArgs(options)
@@ -327,7 +327,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                     ParseResult<
                         z.infer<typeof RequestyStreamChatCompletionChunkSchema>
                     >,
-                    LanguageModelV2StreamPart
+                    LanguageModelV3StreamPart
                 >({
                     transform,
                     flush,
@@ -366,19 +366,7 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
             logprobs: z.any().optional(),
         }),
     ),
-    usage: z
-        .object({
-            prompt_tokens: z.number().optional(),
-            completion_tokens: z.number().optional(),
-            total_tokens: z.number().optional(),
-            prompt_tokens_details: z
-                .object({
-                    caching_tokens: z.number().optional(),
-                    cached_tokens: z.number().optional(),
-                })
-                .optional(),
-        })
-        .optional(),
+    usage: RequestyUsageSchema,
 })
 
 export const RequestyStreamChatCompletionToolSchema = z
@@ -416,19 +404,7 @@ export const RequestyStreamChatCompletionChunkSchema = z.object({
             }),
         )
         .optional(),
-    usage: z
-        .object({
-            prompt_tokens: z.number().optional(),
-            completion_tokens: z.number().optional(),
-            total_tokens: z.number().optional(),
-            prompt_tokens_details: z
-                .object({
-                    caching_tokens: z.number().optional(),
-                    cached_tokens: z.number().optional(),
-                })
-                .optional(),
-        })
-        .optional(),
+    usage: RequestyUsageSchema,
     error: z.any().optional(),
 })
 
@@ -436,10 +412,8 @@ function prepareToolsAndToolChoice({
     tools,
     toolChoice,
 }: {
-    tools?: Array<
-        LanguageModelV2FunctionTool | LanguageModelV2ProviderDefinedTool
-    >
-    toolChoice?: LanguageModelV2CallOptions['toolChoice']
+    tools?: Array<LanguageModelV3FunctionTool | LanguageModelV3ProviderTool>
+    toolChoice?: LanguageModelV3CallOptions['toolChoice']
 }) {
     // when the tools array is empty, change it to undefined to prevent errors:
     const validTools = tools?.length ? tools : undefined
