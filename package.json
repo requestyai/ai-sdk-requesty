@@ -41,7 +41,7 @@
         }
     },
     "dependencies": {
-        "@ai-sdk/provider": "^2.0.0",
+        "@ai-sdk/provider": "^3.0.0",
         "@ai-sdk/provider-utils": "^3.0.9"
     },
     "devDependencies": {
@@ -49,7 +49,7 @@
         "@edge-runtime/vm": "5.0.0",
         "@types/jest": "29.5.14",
         "@types/node": "22.13.5",
-        "ai": "^5.0.52",
+        "ai": "^6.0.1",
         "dotenv": "^17.2.3",
         "msw": "^2.11.3",
         "tsdown": "^0.15.7",
