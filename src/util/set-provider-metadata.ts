@@ -1,17 +1,17 @@
 import type {
-    SharedV2ProviderMetadata,
-    SharedV2ProviderOptions,
+    SharedV3ProviderMetadata,
+    SharedV3ProviderOptions,
 } from '@ai-sdk/provider'
 
 const REQUESTY = 'requesty'
 const REASONING_SIGNATURE = 'reasoning_signature'
 
 type WithProviderOptions = {
-    providerOptions?: SharedV2ProviderOptions | undefined
+    providerOptions?: SharedV3ProviderOptions | undefined
 }
 
 type WithProviderMetadata = {
-    providerMetadata?: SharedV2ProviderMetadata | undefined
+    providerMetadata?: SharedV3ProviderMetadata | undefined
 }
 
 // we read `providerOptions` when converting to Requesty messages

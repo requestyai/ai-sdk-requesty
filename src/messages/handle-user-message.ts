@@ -1,6 +1,6 @@
 import type {
-    LanguageModelV2FilePart,
-    LanguageModelV2Message,
+    LanguageModelV3FilePart,
+    LanguageModelV3Message,
 } from '@ai-sdk/provider'
 import type {
     RequestUserObjectContentParts,
@@ -22,7 +22,7 @@ function toBase64DataUrl(base64Data: string, mediaType: string): string {
 function transformUrl({
     data,
     mediaType,
-}: LanguageModelV2FilePart): [string, boolean] {
+}: LanguageModelV3FilePart): [string, boolean] {
     if (data instanceof Uint8Array) {
         const base64 = Buffer.from(data).toString('base64')
         return [toBase64DataUrl(base64, mediaType), true]
@@ -46,7 +46,7 @@ function transformUrl({
 }
 
 function handleUserFileImageMessage(
-    part: LanguageModelV2FilePart,
+    part: LanguageModelV3FilePart,
 ): RequestyImagePart {
     const [url, isDataUrl] = transformUrl(part)
     return {
@@ -60,7 +60,7 @@ function handleUserFileImageMessage(
 }
 
 function handleUserFilePDFMessage(
-    part: LanguageModelV2FilePart,
+    part: LanguageModelV3FilePart,
 ): RequestyFilePart {
     const [url] = transformUrl(part)
     return {
@@ -72,7 +72,7 @@ function handleUserFilePDFMessage(
 }
 
 function handleUserFileMessage(
-    part: LanguageModelV2FilePart,
+    part: LanguageModelV3FilePart,
 ): RequestyDocumentPart {
     if (part.mediaType.startsWith(IMAGE_MEDIA_TYPE)) {
         return handleUserFileImageMessage(part)
@@ -84,7 +84,7 @@ function handleUserFileMessage(
 }
 
 export function handleUserMessage(
-    message: Extract<LanguageModelV2Message, { role: 'user' }>,
+    message: Extract<LanguageModelV3Message, { role: 'user' }>,
 ): RequestyChatMessage {
     const includesImages = message.content.some((c) => c.type === 'file')
     if (!includesImages) {

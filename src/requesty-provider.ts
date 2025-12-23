@@ -4,48 +4,22 @@ import type {
     RequestyChatModelId,
     RequestyChatSettings,
 } from './requesty-chat-settings'
-import { RequestyCompletionLanguageModel } from './requesty-completion-language-model'
-import type {
-    RequestyCompletionModelId,
-    RequestyCompletionSettings,
-} from './requesty-completion-settings'
-
-export type { RequestyCompletionSettings }
 
 export interface RequestyProvider {
     (
         modelId: RequestyChatModelId,
-        settings?: RequestyCompletionSettings,
-    ): RequestyCompletionLanguageModel
-    (
-        modelId: RequestyChatModelId,
         settings?: RequestyChatSettings,
     ): RequestyChatLanguageModel
 
     languageModel(
         modelId: RequestyChatModelId,
-        settings?: RequestyCompletionSettings,
-    ): RequestyCompletionLanguageModel
-    languageModel(
-        modelId: RequestyChatModelId,
         settings?: RequestyChatSettings,
     ): RequestyChatLanguageModel
 
-    /**
-Creates an Requesty chat model for text generation.
-   */
     chat(
         modelId: RequestyChatModelId,
         settings?: RequestyChatSettings,
     ): RequestyChatLanguageModel
-
-    /**
-Creates an Requesty completion model for text generation.
-   */
-    completion(
-        modelId: RequestyCompletionModelId,
-        settings?: RequestyCompletionSettings,
-    ): RequestyCompletionLanguageModel
 }
 
 export interface RequestyProviderSettings {
@@ -123,21 +97,9 @@ export function createRequesty(
             extraBody: options.extraBody,
         })
 
-    const createCompletionModel = (
-        modelId: RequestyCompletionModelId,
-        settings: RequestyCompletionSettings = {},
-    ) =>
-        new RequestyCompletionLanguageModel(modelId, settings, {
-            provider: 'requesty.completion',
-            url: ({ path }) => `${baseURL}${path}`,
-            headers: getHeaders,
-            compatibility,
-            fetch: options.fetch,
-        })
-
     const createLanguageModel = (
-        modelId: RequestyChatModelId | RequestyCompletionModelId,
-        settings?: RequestyChatSettings | RequestyCompletionSettings,
+        modelId: RequestyChatModelId,
+        settings?: RequestyChatSettings,
     ) => {
         if (new.target) {
             throw new Error(
@@ -145,24 +107,15 @@ export function createRequesty(
             )
         }
 
-        if (modelId === 'openai/gpt-3.5-turbo-instruct') {
-            return createCompletionModel(
-                modelId,
-                settings as RequestyCompletionSettings,
-            )
-        }
-
         return createChatModel(modelId, settings as RequestyChatSettings)
     }
 
     const provider = (
-        modelId: RequestyChatModelId | RequestyCompletionModelId,
-        settings?: RequestyChatSettings | RequestyCompletionSettings,
+        modelId: RequestyChatModelId,
+        settings?: RequestyChatSettings,
     ) => createLanguageModel(modelId, settings)
 
-    provider.languageModel = createLanguageModel
     provider.chat = createChatModel
-    provider.completion = createCompletionModel
 
     return provider as RequestyProvider
 }

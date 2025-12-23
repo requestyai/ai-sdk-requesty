@@ -36,7 +36,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('error')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'error',
+                raw: 'error',
+            })
             expect(enqueuedParts).toHaveLength(1)
             expect(enqueuedParts[0]).toEqual({
                 type: 'error',
@@ -78,7 +81,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('error')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'error',
+                raw: 'API error occurred',
+            })
             expect(enqueuedParts).toHaveLength(1)
             expect(enqueuedParts[0]).toEqual({
                 type: 'error',
@@ -211,9 +217,13 @@ describe('stream', () => {
             )
 
             expect(usage.set).toHaveBeenCalledWith({
-                inputTokens: 10,
-                outputTokens: 20,
-                totalTokens: 30,
+                inputTokens: {
+                    total: 10,
+                    noCache: 10,
+                    cacheRead: 0,
+                    cacheWrite: 5,
+                },
+                outputTokens: { total: 20, reasoning: 0, text: 20 },
             })
             expect(requestyUsage.set).toHaveBeenCalledWith({
                 cachingTokens: 5,
@@ -478,9 +488,13 @@ describe('stream', () => {
             )
 
             expect(usage.set).toHaveBeenCalledWith({
-                inputTokens: 0,
-                outputTokens: 0,
-                totalTokens: 0,
+                inputTokens: {
+                    total: 0,
+                    noCache: 0,
+                    cacheRead: 0,
+                    cacheWrite: 0,
+                },
+                outputTokens: { total: 0, reasoning: 0, text: 0 },
             })
             expect(requestyUsage.set).toHaveBeenCalledWith({
                 cachingTokens: 0,
@@ -557,7 +571,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('stop')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'stop',
+                raw: 'stop',
+            })
         })
 
         it('maps finish_reason "length" to "length"', () => {
@@ -596,46 +613,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('length')
-        })
-
-        it('maps finish_reason "max_tokens" to "length"', () => {
-            const finishReason = { get: vi.fn(), set: vi.fn() }
-            const usage = { get: vi.fn(), set: vi.fn() }
-            const requestyUsage = { get: vi.fn(), set: vi.fn() }
-            const activeId = { get: vi.fn(() => undefined), set: vi.fn() }
-            const reasoningId = { get: vi.fn(), set: vi.fn() }
-            const existingToolCalls = { get: vi.fn(() => []), set: vi.fn() }
-
-            const transform = createTransform({
-                finishReason,
-                usage,
-                requestyUsage,
-                activeId,
-                reasoningId,
-                existingToolCalls,
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'length',
+                raw: 'length',
             })
-
-            const controller = {
-                enqueue: vi.fn(),
-            } as any
-
-            transform(
-                {
-                    success: true,
-                    value: {
-                        choices: [
-                            {
-                                finish_reason: 'max_tokens',
-                                delta: {},
-                            },
-                        ],
-                    },
-                } as any,
-                controller,
-            )
-
-            expect(finishReason.set).toHaveBeenCalledWith('length')
         })
 
         it('maps finish_reason "tool_calls" to "tool-calls"', () => {
@@ -674,7 +655,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('tool-calls')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'tool-calls',
+                raw: 'tool_calls',
+            })
         })
 
         it('maps finish_reason "function_call" to "tool-calls"', () => {
@@ -713,7 +697,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('tool-calls')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'tool-calls',
+                raw: 'function_call',
+            })
         })
 
         it('maps finish_reason "content_filter" to "content-filter"', () => {
@@ -752,7 +739,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('content-filter')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'content-filter',
+                raw: 'content_filter',
+            })
         })
 
         it('maps unknown finish_reason to "unknown"', () => {
@@ -791,7 +781,10 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(finishReason.set).toHaveBeenCalledWith('unknown')
+            expect(finishReason.set).toHaveBeenCalledWith({
+                unified: 'other',
+                raw: 'some_unknown_reason',
+            })
         })
 
         it('does not set finish_reason when it is null', () => {
