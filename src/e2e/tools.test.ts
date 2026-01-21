@@ -70,10 +70,17 @@ describe.concurrent.each(modelsToTest)(
             expect(steps.length).toBeGreaterThan(0)
         })
 
-        it('should handle multi conversation tools', async () => {
+        it.only('should handle multi conversation tools', async () => {
+            const messages = [
+                {
+                    role: 'user',
+                    content: 'What is the weather like in London?',
+                },
+            ]
+
             const firstResult = await generateText({
                 model,
-                prompt: 'What is the weather like in London?',
+                messages,
                 tools: {
                     getWeather: weatherTool,
                 },
@@ -90,9 +97,11 @@ describe.concurrent.each(modelsToTest)(
             expect(firstToolCall?.toolName).toBe('getWeather')
             expect(firstToolCall?.input).toBeDefined()
 
+            messages.push(...firstResult.response.messages)
+
             const secondResult = await generateText({
                 model,
-                messages: firstResult.response.messages,
+                messages,
                 tools: {
                     getWeather: weatherTool,
                 },
@@ -102,12 +111,15 @@ describe.concurrent.each(modelsToTest)(
             expect(secondResult.text).toBeDefined()
             expect(secondResult.text).length.greaterThan(0)
 
+            messages.push(...secondResult.response.messages)
+            messages.push({
+                role: 'user',
+                content: 'What about Lisbon?',
+            })
+
             const thirdResult = await generateText({
                 model,
-                messages: [
-                    ...secondResult.response.messages,
-                    { role: 'user', content: 'What about Lisbon?' },
-                ],
+                messages,
                 tools: {
                     getWeather: weatherTool,
                 },
