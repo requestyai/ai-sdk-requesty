@@ -6,6 +6,7 @@ export default defineConfig([
         format: ['cjs', 'esm'],
         dts: true,
         sourcemap: true,
+        hash: false,
     },
     {
         entry: ['src/internal/index.ts'],
@@ -13,5 +14,6 @@ export default defineConfig([
         format: ['cjs', 'esm'],
         dts: true,
         sourcemap: true,
+        hash: false,
     },
 ])
