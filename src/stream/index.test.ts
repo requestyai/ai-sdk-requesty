@@ -375,7 +375,7 @@ describe('stream', () => {
                         choices: [
                             {
                                 delta: {
-                                    reasoning: 'Let me think...',
+                                    reasoning_content: 'Let me think...',
                                 },
                             },
                         ],
@@ -433,7 +433,7 @@ describe('stream', () => {
                         choices: [
                             {
                                 delta: {
-                                    reasoning: ' more reasoning',
+                                    reasoning_content: ' more reasoning',
                                 },
                             },
                         ],

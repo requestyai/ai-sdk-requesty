@@ -234,10 +234,10 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
         }
 
         // Add reasoning content if present
-        if (choice.message.reasoning) {
+        if (choice.message.reasoning_content) {
             content.push({
                 type: 'reasoning',
-                text: choice.message.reasoning,
+                text: choice.message.reasoning_content,
             })
         }
 
@@ -347,7 +347,7 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
             message: z.object({
                 role: z.string(),
                 content: z.string().nullable().optional(),
-                reasoning: z.string().optional(),
+                reasoning_content: z.string().optional(),
                 reasoning_signature: z.string().optional(),
                 tool_calls: z
                     .array(
@@ -395,7 +395,7 @@ export const RequestyStreamChatCompletionChunkSchema = z.object({
                     .object({
                         content: z.string().nullable().optional(),
                         reasoning_signature: z.string().nullable().optional(),
-                        reasoning: z.string().nullable().optional(),
+                        reasoning_content: z.string().nullable().optional(),
                         tool_calls: RequestyStreamChatCompletionToolSchema,
                     })
                     .optional(),

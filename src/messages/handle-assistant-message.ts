@@ -25,7 +25,7 @@ export function handleAssistantMessage(
         .map((c) => c.text)
         .join('')
     if (reasoning.length > 0) {
-        assistantMessage.reasoning = reasoning
+        assistantMessage.reasoning_content = reasoning
     }
 
     const contentToolCalls = message.content.filter(

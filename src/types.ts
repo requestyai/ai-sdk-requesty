@@ -59,7 +59,7 @@ export interface RequestyChatMessage {
     content: string | null | RequestUserObjectContentParts
     tool_call_id?: string
     tool_calls?: RequestyToolCall[]
-    reasoning?: string
+    reasoning_content?: string
     reasoning_signature?: string
 }
 
