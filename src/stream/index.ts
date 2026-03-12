@@ -155,7 +155,7 @@ export const createTransform = ({
             })
         }
 
-        if (delta.reasoning) {
+        if (delta.reasoning_content) {
             let id = reasoningId.get()
             if (!id) {
                 id = generateId()
@@ -170,7 +170,7 @@ export const createTransform = ({
             controller.enqueue({
                 id,
                 type: 'reasoning-delta',
-                delta: delta.reasoning,
+                delta: delta.reasoning_content,
             })
         }
 

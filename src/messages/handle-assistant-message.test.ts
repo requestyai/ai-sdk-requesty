@@ -88,7 +88,7 @@ describe('assistant messages', () => {
             {
                 role: 'assistant',
                 content: null,
-                reasoning: 'Let me think about this...',
+                reasoning_content: 'Let me think about this...',
             },
         ],
         [
@@ -109,7 +109,7 @@ describe('assistant messages', () => {
             {
                 role: 'assistant',
                 content: null,
-                reasoning: 'First, then...',
+                reasoning_content: 'First, then...',
             },
         ],
         [
@@ -130,7 +130,7 @@ describe('assistant messages', () => {
             {
                 role: 'assistant',
                 content: 'Here is my answer.',
-                reasoning: 'Thinking...',
+                reasoning_content: 'Thinking...',
             },
         ],
         [
@@ -259,7 +259,7 @@ describe('assistant messages', () => {
             {
                 role: 'assistant',
                 content: 'Looking that up...',
-                reasoning: 'I need to search for this.',
+                reasoning_content: 'I need to search for this.',
                 tool_calls: [
                     {
                         id: 'call_999',
