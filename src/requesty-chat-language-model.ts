@@ -302,12 +302,7 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
             body: {
                 ...args,
                 stream: true,
-
-                // only include stream_options when in strict compatibility mode:
-                stream_options:
-                    this.config.compatibility === 'strict'
-                        ? { include_usage: true }
-                        : undefined,
+                stream_options: { include_usage: true },
             },
             failedResponseHandler: requestyFailedResponseHandler,
             successfulResponseHandler: createEventSourceResponseHandler(
