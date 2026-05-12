@@ -11,5 +11,6 @@ export const RequestyUsageSchema = z
                 cached_tokens: z.number().optional(),
             })
             .optional(),
+        cost: z.number().positive().optional(),
     })
     .optional()

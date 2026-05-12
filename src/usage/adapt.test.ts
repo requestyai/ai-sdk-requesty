@@ -30,6 +30,15 @@ describe('getUsage', () => {
                 text: 50,
                 reasoning: 0,
             },
+            raw: {
+                completion_tokens: 50,
+                prompt_tokens: 100,
+                prompt_tokens_details: {
+                    cached_tokens: 20,
+                    caching_tokens: 10,
+                },
+                total_tokens: 150,
+            },
         })
     })
 
@@ -53,6 +62,10 @@ describe('getUsage', () => {
                 text: 50,
                 reasoning: 0,
             },
+            raw: {
+                completion_tokens: 50,
+                prompt_tokens: 100,
+            },
         })
     })
 
@@ -73,6 +86,7 @@ describe('getUsage', () => {
                 text: 0,
                 reasoning: 0,
             },
+            raw: undefined,
         })
     })
 
@@ -93,6 +107,7 @@ describe('getUsage', () => {
                 text: 0,
                 reasoning: 0,
             },
+            raw: {},
         })
     })
 
@@ -118,6 +133,13 @@ describe('getUsage', () => {
                 total: 50,
                 text: 50,
                 reasoning: 0,
+            },
+            raw: {
+                completion_tokens: 50,
+                prompt_tokens: 100,
+                prompt_tokens_details: {
+                    cached_tokens: 20,
+                },
             },
         })
     })
@@ -160,6 +182,14 @@ describe('getUsage', () => {
                 text: 0,
                 reasoning: 0,
             },
+            raw: {
+                completion_tokens: 0,
+                prompt_tokens: 0,
+                prompt_tokens_details: {
+                    cached_tokens: 0,
+                    caching_tokens: 0,
+                },
+            },
         })
     })
 
@@ -186,6 +216,14 @@ describe('getUsage', () => {
                 total: 500000,
                 text: 500000,
                 reasoning: 0,
+            },
+            raw: {
+                completion_tokens: 500000,
+                prompt_tokens: 1000000,
+                prompt_tokens_details: {
+                    cached_tokens: 200000,
+                    caching_tokens: 100000,
+                },
             },
         })
     })

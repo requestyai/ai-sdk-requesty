@@ -224,6 +224,14 @@ describe('stream', () => {
                     cacheWrite: 5,
                 },
                 outputTokens: { total: 20, reasoning: 0, text: 20 },
+                raw: {
+                    completion_tokens: 20,
+                    prompt_tokens: 10,
+                    prompt_tokens_details: {
+                        caching_tokens: 5,
+                    },
+                    total_tokens: 30,
+                },
             })
             expect(requestyUsage.set).toHaveBeenCalledWith({
                 cachingTokens: 5,
@@ -495,6 +503,7 @@ describe('stream', () => {
                     cacheWrite: 0,
                 },
                 outputTokens: { total: 0, reasoning: 0, text: 0 },
+                raw: {},
             })
             expect(requestyUsage.set).toHaveBeenCalledWith({
                 cachingTokens: 0,

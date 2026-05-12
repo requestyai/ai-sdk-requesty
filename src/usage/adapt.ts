@@ -27,5 +27,6 @@ export const adaptUsage = (
             // TODO adapt reasoning usage
             reasoning: 0,
         },
+        raw: requestyUsage,
     }
 }
