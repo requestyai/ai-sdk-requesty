@@ -13,7 +13,7 @@ const modelsToTest = getTestModels()
 describe.concurrent.each(modelsToTest)('Usage and Cost', ({ id }) => {
     const model = requesty.chat(id)
 
-    describe.skip('generateText', () => {
+    describe('generateText', () => {
         it('should return cost in response', async () => {
             const result = await generateText({
                 model,
