@@ -267,7 +267,11 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 inputTokens: response.usage?.prompt_tokens ?? 0,
                 outputTokens: response.usage?.completion_tokens ?? 0,
                 totalTokens: response.usage?.total_tokens ?? 0,
-            },
+
+                // not technically supported on this version.
+                // so the user will need some to assert it on their end.
+                raw: response.usage,
+            } as any,
             ...(providerMetadata ? { providerMetadata } : {}),
             request: { body: rawSettings },
             response: {
@@ -303,11 +307,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 ...args,
                 stream: true,
 
-                // only include stream_options when in strict compatibility mode:
-                stream_options:
-                    this.config.compatibility === 'strict'
-                        ? { include_usage: true }
-                        : undefined,
+                stream_options: { include_usage: true },
             },
             failedResponseHandler: requestyFailedResponseHandler,
             successfulResponseHandler: createEventSourceResponseHandler(
@@ -377,6 +377,7 @@ const RequestyNonStreamChatCompletionResponseSchema = z.object({
                     cached_tokens: z.number().optional(),
                 })
                 .optional(),
+            cost: z.number().positive().optional(),
         })
         .optional(),
 })
