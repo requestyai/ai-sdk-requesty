@@ -36,6 +36,7 @@ function handleUsageChunk(
 
     const requestyUsage: Partial<RequestyUsage> = {
         cachingTokens: usage.prompt_tokens_details?.caching_tokens ?? 0,
+        ...(usage.cost != null ? { cost: usage.cost } : {}),
     }
 
     return [modelUsage, requestyUsage]
@@ -307,14 +308,17 @@ export const createFlush = ({
         const providerMetadata: SharedV2ProviderMetadata = {
             requesty: {
                 usage:
-                    currentRequestyUsage.cachedTokens &&
-                    currentRequestyUsage.cachingTokens
+                    currentRequestyUsage.cachedTokens ||
+                    currentRequestyUsage.cachingTokens ||
+                    currentRequestyUsage.cost != null
                         ? currentRequestyUsage
                         : {},
             },
         }
 
-        const hasProviderMetadata = providerMetadata.requesty?.usage
+        const hasProviderMetadata =
+            providerMetadata.requesty?.usage &&
+            Object.keys(providerMetadata.requesty.usage).length > 0
 
         const currentFinishReason = finishReason.get()
         const currentUsage = usage.get()
