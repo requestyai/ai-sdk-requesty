@@ -61,6 +61,11 @@ describe('Requesty Integration - Chat', () => {
                 inputTokens: 10,
                 outputTokens: 9,
                 totalTokens: 19,
+                raw: {
+                    prompt_tokens: 10,
+                    completion_tokens: 9,
+                    total_tokens: 19,
+                },
             })
         })
 

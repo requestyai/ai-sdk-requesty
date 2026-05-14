@@ -205,20 +205,27 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
             throw new Error('No choice in response')
         }
 
-        const providerMetadata = response.usage?.prompt_tokens_details
-            ? ({
-                  requesty: {
-                      usage: {
-                          cachingTokens:
-                              response.usage.prompt_tokens_details
-                                  .caching_tokens ?? 0,
-                          cachedTokens:
-                              response.usage.prompt_tokens_details
-                                  .cached_tokens ?? 0,
+        const hasPromptTokensDetails = response.usage?.prompt_tokens_details
+        const hasCost = response.usage?.cost != null
+
+        const providerMetadata =
+            hasPromptTokensDetails || hasCost
+                ? ({
+                      requesty: {
+                          usage: {
+                              cachingTokens:
+                                  response.usage?.prompt_tokens_details
+                                      ?.caching_tokens ?? 0,
+                              cachedTokens:
+                                  response.usage?.prompt_tokens_details
+                                      ?.cached_tokens ?? 0,
+                              ...(hasCost
+                                  ? { cost: response.usage!.cost }
+                                  : {}),
+                          },
                       },
-                  },
-              } satisfies SharedV2ProviderMetadata)
-            : undefined
+                  } satisfies SharedV2ProviderMetadata)
+                : undefined
 
         // Convert to content format
         const content: Array<LanguageModelV2Content> = []
@@ -428,6 +435,7 @@ export const RequestyStreamChatCompletionChunkSchema = z.object({
                     cached_tokens: z.number().optional(),
                 })
                 .optional(),
+            cost: z.number().optional(),
         })
         .optional(),
     error: z.any().optional(),

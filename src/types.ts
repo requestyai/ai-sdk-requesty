@@ -42,6 +42,7 @@ export type RequestySharedSettings = RequestyProviderOptions & {
 export type RequestyUsage = {
     cachingTokens?: number
     cachedTokens?: number
+    cost?: number
 }
 
 export type RequestyProviderMetadata = {
