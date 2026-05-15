@@ -274,11 +274,7 @@ export class RequestyChatLanguageModel implements LanguageModelV2 {
                 inputTokens: response.usage?.prompt_tokens ?? 0,
                 outputTokens: response.usage?.completion_tokens ?? 0,
                 totalTokens: response.usage?.total_tokens ?? 0,
-
-                // not technically supported on this version.
-                // so the user will need some to assert it on their end.
-                raw: response.usage,
-            } as any,
+            },
             ...(providerMetadata ? { providerMetadata } : {}),
             request: { body: rawSettings },
             response: {
