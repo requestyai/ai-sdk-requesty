@@ -30,6 +30,16 @@ describe.concurrent.each(modelsToTest)(
                 expect(result.usage.outputTokens).toBeGreaterThan(0)
                 expect(result.usage.totalTokens).toBeGreaterThan(0)
                 expect(result.finishReason).toBeDefined()
+
+                expect(result.providerMetadata).toEqual({
+                    requesty: {
+                        usage: {
+                            cachedTokens: expect.any(Number),
+                            cachingTokens: expect.any(Number),
+                            cost: expect.any(Number),
+                        },
+                    },
+                })
             })
 
             it('should handle messages array with system message', async () => {
@@ -95,6 +105,15 @@ describe.concurrent.each(modelsToTest)(
 
                 const finalFinishReason = await streamResult.finishReason
                 expect(finalFinishReason).toBeDefined()
+
+                expect(await streamResult.providerMetadata).toEqual({
+                    requesty: {
+                        usage: {
+                            cachingTokens: expect.any(Number),
+                            cost: expect.any(Number),
+                        },
+                    },
+                })
             })
         })
     },
