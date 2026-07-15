@@ -159,7 +159,7 @@ export const createTransform = ({
             let id = reasoningId.get()
             if (!id) {
                 id = generateId()
-                activeId.set(id)
+                reasoningId.set(id)
 
                 controller.enqueue({
                     type: 'reasoning-start',
