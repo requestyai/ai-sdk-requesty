@@ -392,7 +392,7 @@ describe('stream', () => {
                 controller,
             )
 
-            expect(activeId.set).toHaveBeenCalled()
+            expect(reasoningId.set).toHaveBeenCalled()
             expect(enqueuedParts).toContainEqual(
                 expect.objectContaining({
                     type: 'reasoning-start',
