@@ -97,27 +97,15 @@ export function createRequesty(
             extraBody: options.extraBody,
         })
 
-    const createLanguageModel = (
-        modelId: RequestyChatModelId,
-        settings?: RequestyChatSettings,
-    ) => {
-        if (new.target) {
-            throw new Error(
-                'The Requesty model function cannot be called with the new keyword.',
-            )
-        }
-
-        return createChatModel(modelId, settings as RequestyChatSettings)
-    }
-
     const provider = (
         modelId: RequestyChatModelId,
         settings?: RequestyChatSettings,
-    ) => createLanguageModel(modelId, settings)
+    ) => createChatModel(modelId, settings)
 
+    provider.languageModel = createChatModel
     provider.chat = createChatModel
 
-    return provider as RequestyProvider
+    return provider
 }
 
 /**
