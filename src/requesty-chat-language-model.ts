@@ -31,6 +31,7 @@ import type {
 } from './requesty-chat-settings'
 import { requestyFailedResponseHandler } from './requesty-error'
 import { createStreamMethods } from './stream'
+import type { RequestyProviderOptions } from './types'
 import { adaptUsage } from './usage'
 import { RequestyUsageSchema } from './usage/schema'
 import { maybeSetReasoningContent } from './util'
@@ -90,8 +91,14 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
         toolChoice,
         providerOptions,
     }: LanguageModelV3CallOptions) {
-        // Extract requesty metadata from providerOptions and put it at root level
-        const requestyMetadata = providerOptions?.['requesty'] ?? {}
+        const {
+            includeReasoning,
+            reasoningEffort,
+            user,
+            extraBody,
+            ...requestyMetadata
+        } = (providerOptions?.requesty ?? {}) as RequestyProviderOptions
+
         const extraCallingBody: Record<string, any> = {}
 
         // If there's requesty metadata, add it as a root-level 'requesty' field
@@ -119,7 +126,7 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
                           ? 0
                           : undefined
                       : undefined,
-            user: this.settings.user,
+            user: user ?? this.settings.user,
             parallel_tool_calls: this.settings.parallelToolCalls,
 
             // standardized settings:
@@ -138,12 +145,14 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
             messages: convertToRequestyChatMessages(prompt),
 
             // Requesty specific settings:
-            include_reasoning: this.settings.includeReasoning,
-            reasoning_effort: this.settings.reasoningEffort,
+            include_reasoning:
+                includeReasoning ?? this.settings.includeReasoning,
+            reasoning_effort: reasoningEffort ?? this.settings.reasoningEffort,
 
             // extra body:
             ...this.config.extraBody,
             ...this.settings.extraBody,
+            ...extraBody,
             ...extraCallingBody,
         }
 
