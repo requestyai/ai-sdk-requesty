@@ -43,7 +43,7 @@
     },
     "dependencies": {
         "@ai-sdk/provider": "^3.0.0",
-        "@ai-sdk/provider-utils": "^3.0.9"
+        "@ai-sdk/provider-utils": "^4.0.41"
     },
     "devDependencies": {
         "@biomejs/biome": "2.2.5",
