@@ -80,7 +80,7 @@
     "pnpm": {
         "overrides": {
             "undici": "^6.27.0",
-            "nanoid": "3.3.17"
+            "nanoid": "3.3.18"
         }
     }
 }
