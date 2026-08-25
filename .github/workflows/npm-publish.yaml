@@ -45,4 +45,4 @@ jobs:
       - name: Build package
         run: pnpm run build
       - name: Publish package
-        run: npm publish
+        run: npm stage publish
