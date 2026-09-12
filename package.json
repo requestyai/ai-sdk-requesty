@@ -7,7 +7,9 @@
     "main": "./dist/index.js",
     "module": "./dist/index.mjs",
     "types": "./dist/index.d.ts",
-    "files": ["dist/**/*"],
+    "files": [
+        "dist/**/*"
+    ],
     "scripts": {
         "build": "tsdown",
         "clean": "rm -rf dist && rm -rf internal/dist",
@@ -54,7 +56,7 @@
         "dotenv": "^17.2.3",
         "tsdown": "^0.22.0",
         "typescript": "5.7.3",
-        "vitest": "3.2.7",
+        "vitest": "4.1.11",
         "zod": "^4.1.11"
     },
     "peerDependencies": {
@@ -75,7 +77,9 @@
     "bugs": {
         "url": "https://github.com/requestyai/ai-sdk-requesty/issues"
     },
-    "keywords": ["ai"],
+    "keywords": [
+        "ai"
+    ],
     "packageManager": "pnpm@9.15.0+sha512.76e2379760a4328ec4415815bcd6628dee727af3779aaa4c914e3944156c4299921a89f976381ee107d41f12cfa4b66681ca9c718f0668fa0831ed4c6d8ba56c",
     "pnpm": {
         "overrides": {
