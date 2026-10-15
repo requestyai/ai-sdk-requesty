@@ -48,6 +48,25 @@ type RequestyChatConfig = {
 
 const URL_REGEX = /^https?:\/\/.*$/
 
+function adaptResponseFormat(
+    responseFormat: LanguageModelV3CallOptions['responseFormat'],
+) {
+    if (responseFormat?.type !== 'json') {
+        return undefined
+    }
+    if (!responseFormat.schema) {
+        return { type: 'json_object' }
+    }
+    return {
+        type: 'json_schema',
+        json_schema: {
+            name: responseFormat.name ?? 'response',
+            description: responseFormat.description,
+            schema: responseFormat.schema,
+        },
+    }
+}
+
 export class RequestyChatLanguageModel implements LanguageModelV3 {
     readonly specificationVersion = 'v3'
     readonly provider: string
@@ -138,7 +157,7 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
             seed,
 
             stop: stopSequences,
-            response_format: responseFormat,
+            response_format: adaptResponseFormat(responseFormat),
             top_k: topK,
 
             // messages:
@@ -164,14 +183,6 @@ export class RequestyChatLanguageModel implements LanguageModelV3 {
                     toolChoice,
                 })
             return { ...baseArgs, tools: mappedTools, tool_choice }
-        }
-
-        // Handle response format for object generation
-        if (responseFormat?.type === 'json') {
-            return {
-                ...baseArgs,
-                response_format: { type: 'json_object' },
-            }
         }
 
         return baseArgs
