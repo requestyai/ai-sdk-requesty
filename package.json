@@ -1,6 +1,6 @@
 {
     "name": "@requesty/ai-sdk",
-    "version": "3.6.3",
+    "version": "3.6.4",
     "license": "Apache-2.0",
     "sideEffects": false,
     "type": "module",
