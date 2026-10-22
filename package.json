@@ -1,6 +1,6 @@
 {
     "name": "@requesty/ai-sdk",
-    "version": "3.6.4",
+    "version": "3.6.5",
     "license": "Apache-2.0",
     "sideEffects": false,
     "type": "module",
@@ -80,7 +80,7 @@
     "pnpm": {
         "overrides": {
             "source-map-js": "~1.2.2",
-            "undici": "~8.10.2"
+            "undici": "~8.12.2"
         }
     }
 }
