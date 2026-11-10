@@ -33,10 +33,8 @@ describe('Requesty Integration - Chat', () => {
 
             const result = await generateText({
                 model: requesty.chat('openai/gpt-4o-mini'),
-                messages: [
-                    { role: 'system', content: 'You are a helpful assistant.' },
-                    { role: 'user', content: 'Hello!' },
-                ],
+                instructions: 'You are a helpful assistant.',
+                messages: [{ role: 'user', content: 'Hello!' }],
             })
 
             expect(result.text).toBe('Hello! How can I help you today?')

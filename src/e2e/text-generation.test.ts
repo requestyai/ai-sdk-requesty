@@ -35,11 +35,8 @@ describe.concurrent.each(modelsToTest)(
             it('should handle messages array with system message', async () => {
                 const result = await generateText({
                     model,
+                    instructions: 'You are a helpful AI assistant.',
                     messages: [
-                        {
-                            role: 'system',
-                            content: 'You are a helpful AI assistant.',
-                        },
                         {
                             role: 'user',
                             content: 'Write a short haiku about clouds.',
@@ -55,7 +52,8 @@ describe.concurrent.each(modelsToTest)(
             it('should handle multi-turn conversation', async () => {
                 const result = await generateText({
                     model,
-                    system: 'You are a helpful assistant that responds concisely.',
+                    instructions:
+                        'You are a helpful assistant that responds concisely.',
                     messages: [
                         {
                             role: 'user',

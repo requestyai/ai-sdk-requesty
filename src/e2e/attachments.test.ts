@@ -41,8 +41,8 @@ describe.concurrent.each(attachmentCapableModels)(
                                 text: 'describe this',
                             },
                             {
-                                type: 'image',
-                                image: SMALL_BASE64_IMAGE,
+                                type: 'file',
+                                data: SMALL_BASE64_IMAGE,
                                 mediaType: 'image/png',
                             },
                         ],
@@ -65,8 +65,8 @@ describe.concurrent.each(attachmentCapableModels)(
                                 text: 'describe this',
                             },
                             {
-                                type: 'image',
-                                image: IMAGE_URL,
+                                type: 'file',
+                                data: IMAGE_URL,
                                 mediaType: 'image/png',
                             },
                         ],

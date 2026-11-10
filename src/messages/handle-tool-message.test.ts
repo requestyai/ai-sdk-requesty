@@ -114,7 +114,7 @@ describe('tool messages', () => {
                             text: 'Text part',
                         },
                         {
-                            type: 'media',
+                            type: 'file-data',
                             mediaType: 'image/png',
                             data: new Uint8Array([1, 2, 3]),
                         } as any,
@@ -133,7 +133,7 @@ describe('tool messages', () => {
                     type: 'content',
                     value: [
                         {
-                            type: 'media',
+                            type: 'file-data',
                             mediaType: 'image/jpeg',
                             data: new Uint8Array([255, 216, 255]),
                         },

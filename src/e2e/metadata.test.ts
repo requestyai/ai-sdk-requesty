@@ -53,8 +53,9 @@ describe.concurrent.each(modelsToTest)(
                                 text: 'Describe this simple image in 10 words.',
                             },
                             {
-                                type: 'image',
-                                image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                                type: 'file',
+                                data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+                                mediaType: 'image',
                             },
                         ],
                     },
