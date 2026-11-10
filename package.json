@@ -42,7 +42,7 @@
         }
     },
     "dependencies": {
-        "@ai-sdk/provider": "^3.0.0",
+        "@ai-sdk/provider": "^3.0.14",
         "@ai-sdk/provider-utils": "^4.0.41"
     },
     "devDependencies": {
@@ -50,15 +50,15 @@
         "@edge-runtime/vm": "5.0.0",
         "@types/jest": "29.5.14",
         "@types/node": "22.13.5",
-        "ai": "^6.0.1",
-        "dotenv": "^17.2.3",
-        "tsdown": "^0.22.0",
+        "ai": "^6.0.238",
+        "dotenv": "^17.4.2",
+        "tsdown": "^0.22.14",
         "typescript": "5.7.3",
         "vitest": "4.1.11",
-        "zod": "^4.1.11"
+        "zod": "^4.4.3"
     },
     "peerDependencies": {
-        "vite": "^7.1.7",
+        "vite": "^7.3.8",
         "zod": "^3.25.76 || ^4.0.0"
     },
     "engines": {
