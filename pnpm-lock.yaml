@@ -17,7 +17,7 @@ importers:
         version: 3.0.14
       '@ai-sdk/provider-utils':
         specifier: ^4.0.41
-        version: 4.0.41(zod@4.4.3)
+        version: 4.0.41(zod@4.6.6)
       vite:
         specifier: ^7.3.8
         version: 7.3.8(@types/node@22.13.5)(jiti@2.6.1)
@@ -36,7 +36,7 @@ importers:
         version: 22.13.5
       ai:
         specifier: ^6.0.238
-        version: 6.0.238(zod@4.4.3)
+        version: 6.0.238(zod@4.6.6)
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -50,8 +50,8 @@ importers:
         specifier: 4.1.11
         version: 4.1.11(@edge-runtime/vm@5.0.0)(@opentelemetry/api@1.9.1)(@types/node@22.13.5)(msw@2.11.3(@types/node@22.13.5)(typescript@5.7.3))(vite@7.3.8(@types/node@22.13.5)(jiti@2.6.1))
       zod:
-        specifier: ^4.4.3
-        version: 4.4.3
+        specifier: ^4.6.6
+        version: 4.6.6
 
 packages:
 
@@ -1400,25 +1400,25 @@ packages:
   yuku-parser@0.8.1:
     resolution: {integrity: sha512-YvUz2jdFMIq0QjN8LmI32ox+RBCn3l8VToAXVQ5QFfLTxSxmGZS6JP80ptePEju+CpeTdINLmUm7Ewodzh1QnQ==}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@4.6.6:
+    resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==}
 
 snapshots:
 
-  '@ai-sdk/gateway@3.0.160(zod@4.4.3)':
+  '@ai-sdk/gateway@3.0.160(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.14
-      '@ai-sdk/provider-utils': 4.0.41(zod@4.4.3)
+      '@ai-sdk/provider-utils': 4.0.41(zod@4.6.6)
       '@vercel/oidc': 3.2.0
-      zod: 4.4.3
+      zod: 4.6.6
 
-  '@ai-sdk/provider-utils@4.0.41(zod@4.4.3)':
+  '@ai-sdk/provider-utils@4.0.41(zod@4.6.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.14
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.1.0
       undici: 8.12.4
-      zod: 4.4.3
+      zod: 4.6.6
 
   '@ai-sdk/provider@3.0.14':
     dependencies:
@@ -1955,13 +1955,13 @@ snapshots:
 
   '@yuku-toolchain/types@0.8.1': {}
 
-  ai@6.0.238(zod@4.4.3):
+  ai@6.0.238(zod@4.6.6):
     dependencies:
-      '@ai-sdk/gateway': 3.0.160(zod@4.4.3)
+      '@ai-sdk/gateway': 3.0.160(zod@4.6.6)
       '@ai-sdk/provider': 3.0.14
-      '@ai-sdk/provider-utils': 4.0.41(zod@4.4.3)
+      '@ai-sdk/provider-utils': 4.0.41(zod@4.6.6)
       '@opentelemetry/api': 1.9.1
-      zod: 4.4.3
+      zod: 4.6.6
 
   ansi-regex@5.0.1:
     optional: true
@@ -2542,4 +2542,4 @@ snapshots:
       '@yuku-parser/binding-win32-arm64': 0.8.1
       '@yuku-parser/binding-win32-x64': 0.8.1
 
-  zod@4.4.3: {}
+  zod@4.6.6: {}
